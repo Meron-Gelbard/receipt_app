@@ -1,10 +1,10 @@
 from datetime import datetime
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, update
 from flask import Flask, render_template, redirect, url_for, flash, request, abort, session
 from flask_sqlalchemy import SQLAlchemy
 import os
-from sqlalchemy import Table, Column, Integer, ForeignKey, String, Date, DateTime
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, Integer, ForeignKey, String, Date, DateTime, event, delete
+from sqlalchemy.orm import relationship, Mapped
 from sqlalchemy.orm import declarative_base
 
 # hash these later...
@@ -33,48 +33,57 @@ Base = declarative_base()
 
 class User(db.Model, Base):
     __tablename__ = "users"
-    user_id = db.Column(Integer, primary_key=True)
-    first_name = db.Column(String(50), nullable=False)
-    last_name = db.Column(String(50), nullable=False)
-    email = db.Column(String(250), nullable=False)
-    phone = db.Column(String(20), nullable=True)
-    company_name = db.Column(String(250), nullable=False)
-    address_id = db.Column(Integer, ForeignKey('addresses.address_id'), nullable=True)
-    password = db.Column(String(250), nullable=False)
-    create_date = db.Column(Date, nullable=False)
-    last_login = db.Column(DateTime, nullable=True)
-
+    user_id: Mapped[int] = Column(Integer, primary_key=True)
+    first_name = Column(String(50), nullable=False)
+    last_name = Column(String(50), nullable=False)
+    email = Column(String(250), nullable=False, unique=True)
+    phone = Column(String(20), nullable=True, unique=True)
+    company_name = Column(String(250), nullable=False, unique=True)
+    password = Column(String(250), nullable=False)
+    create_date = Column(Date, nullable=False)
+    last_login = Column(DateTime, nullable=True)
+    address = relationship("Address", back_populates="user", cascade="all, delete", passive_deletes=True)
+    address_id = Column(Integer)
 
 class Address(db.Model, Base):
     __tablename__ = "addresses"
-    address_id = db.Column(Integer, primary_key=True)
-    country = db.Column(String(100), nullable=False)
-    city = db.Column(String(100), nullable=False)
-    address = db.Column(String(300), nullable=False)
-    user_id = db.Column(Integer, ForeignKey('users.user_id'), nullable=False)
+    address_id: Mapped[int] = Column(Integer, primary_key=True)
+    country = Column(String(100), nullable=False)
+    city = Column(String(100), nullable=False)
+    address = Column(String(300), nullable=False, unique=True)
+    user = relationship("User", back_populates="address")
+    user_id = Column(ForeignKey("users.user_id", ondelete="CASCADE"))
 
 
 class Document(db.Model, Base):
     __tablename__ = "documents"
-    doc_id = db.Column(Integer, primary_key=True)
-    user_id = db.Column(Integer, ForeignKey('users.user_id'), nullable=False)
-    doc_type = db.Column(String(30), nullable=False)
-    doc_date = db.Column(Date, nullable=False)
-    subject = db.Column(String(300), nullable=False)
-    payment_amount = db.Column(Integer, nullable=False)
-    payment_type = db.Column(String(30), nullable=False)
-    recipient_id = db.Column(Integer, ForeignKey('recipients.recipient_id'), nullable=False)
+    doc_id = Column(Integer, primary_key=True)
+    doc_type = Column(String(30), nullable=False)
+    doc_date = Column(Date, nullable=False)
+    subject = Column(String(300), nullable=False)
+    payment_amount = Column(Integer, nullable=False)
+    payment_type = Column(String(30), nullable=False)
+    recipient_id = Column(Integer, ForeignKey('recipients.recipient_id'))
+    user_id = Column(ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
 
 
 class Recipient(db.Model, Base):
     __tablename__ = "recipients"
-    recipient_id = db.Column(Integer, primary_key=True)
-    name = db.Column(String(300), nullable=False)
-    phone = db.Column(String(30), nullable=False)
-    address = db.Column(String(300), nullable=False)
-    user_id = db.Column(Integer, ForeignKey('users.user_id'), nullable=False)
+    recipient_id = Column(Integer, primary_key=True)
+    name = Column(String(300), nullable=False)
+    phone = Column(String(30), nullable=False)
+    address = Column(String(300), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.user_id'))
 
-    # db.create_all()
+
+def build_database():
+    with app.app_context():
+        db.create_all()
+
+def drop_database():
+    with app.app_context():
+        db.session.remove()
+        db.drop_all()
 
 
 def create_new_user():
@@ -89,21 +98,50 @@ def create_new_user():
         )
     with app.app_context():
         db.session.add(new_user)
-        db.session.commit()
-        connection = engine.connect()
-        result = connection.execute(text('SELECT MAX(user_id) FROM users')).fetchall()
-    print(type(result[0][0]))
-    user_address = Address(
-        user_id=result[0][0],
-        country=input('country:'),
-        city=input('city:'),
-        address=input('address:'),
-        )
-    with app.app_context():
+
+        user_address = Address(
+            country=input('country:'),
+            city=input('city:'),
+            address=input('address:'),
+            user=new_user
+            )
+
         db.session.add(user_address)
         db.session.commit()
+        db.session.execute(text(f"UPDATE users "
+                                f"SET address_id={user_address.address_id} "
+                                f"WHERE user_id={user_address.user_id}"))
+        db.session.commit()
+
+def create_document():
+    user = int(input('document user:'))
+    new_document = Document(
+        user_id=user,
+        doc_type=input('document type:'),
+        doc_date=datetime.now(),
+        subject=input('document subject:'),
+        payment_amount=int(input('payment amount(int):')),
+        payment_type=input('payment type:'))
+
+    with app.app_context():
+        db.session.add(new_document)
+
+        newdoc_recipient = Recipient(
+            name=input('recipient name:'),
+            phone=input('recipient phone:'),
+            address=input('recipient address:'),
+            user_id=user)
+
+        db.session.add(newdoc_recipient)
+        db.session.commit()
+        db.session.execute(text(f"UPDATE documents "
+                                f"SET recipient_id={newdoc_recipient.recipient_id} "
+                                f"WHERE doc_id={new_document.doc_id}"))
+        db.session.commit()
 
 
-create_new_user()
+create_document()
+
+
 
 
