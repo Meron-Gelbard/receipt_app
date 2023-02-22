@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create User</title>
+</head>
+<body>
+    <form action="{{ url_for('register_user') }}" method="POST" novalidate>
+       {{ form.csrf_token }}
+        {{ form.first_name.label }}<br>{{ form.first_name }}<br>
+        {{ form.last_name.label }}<br>{{ form.last_name }}<br>
+        {{ form.email.label }}<br>{{ form.email }}<br>
+        {{ form.phone.label }}<br>{{ form.phone }}<br>
+        {{ form.company_name.label }}<br>{{ form.company_name }}<br>
+        {{ form.password.label }}<br>{{ form.password }}<br>
+        {{ form.pass_repeat.label }}<br>{{ form.pass_repeat }}<br>
+        {{ form.country.label }}<br>{{ form.country }}<br>
+        {{ form.city.label }}<br>{{ form.city }}<br>
+        {{ form.address.label }}<br>{{ form.address }}<br>
+        <br>
+        {{ form.submit(class_="btn btn-primary") }}
+      </form>
+</body>
+</html>

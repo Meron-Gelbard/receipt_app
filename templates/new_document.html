@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ user.first_name }} {{ user.last_name }} - New Document</title>
+</head>
+<body>
+  <form action="{{ url_for('new_document', user_name=user.user_name) }}" method="POST" novalidate>
+       {{ form.csrf_token }}
+        {{ form.subject.label }}<br>{{ form.subject }}<br>
+        {{ form.doc_type.label }}<br>{{ form.doc_type }}<br>
+        {{ form.recipient_name.label }}<br>{{ form.recipient_name }}<br>
+        {{ form.recipient_phone.label }}<br>{{ form.recipient_phone }}<br>
+        {{ form.recipient_address.label }}<br>{{ form.recipient_address }}<br>
+        {{ form.recipient_email.label }}<br>{{ form.recipient_email }}<br>
+        {{ form.payment_amount.label }}<br>{{ form.payment_amount }}<br>
+        {{ form.payment_type.label }}<br>{{ form.payment_type }}<br>
+        <br>
+        {{ form.submit(class_="btn btn-primary") }}
+      </form>
+</body>
+</html>

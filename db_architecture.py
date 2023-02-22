@@ -1,17 +1,17 @@
-
-from sqlalchemy import Column, Integer, ForeignKey, String, Date, DateTime, event, delete
-from sqlalchemy.orm import relationship, Mapped
-from sqlalchemy.orm import declarative_base
+from sqlalchemy import Column, Integer, ForeignKey, String, Date, DateTime
+from sqlalchemy.orm import relationship, Mapped, declarative_base
+from main import db
 
 Base = declarative_base()
 
-# CONFIGURE TABLES
 
+# CONFIGURE TABLES
 class User(db.Model, Base):
     __tablename__ = "users"
     user_id: Mapped[int] = Column(Integer, primary_key=True)
     first_name = Column(String(50), nullable=False)
     last_name = Column(String(50), nullable=False)
+    user_name = Column(String(100), nullable=False, unique=True)
     email = Column(String(250), nullable=False, unique=True)
     phone = Column(String(20), nullable=True, unique=True)
     company_name = Column(String(250), nullable=False, unique=True)
@@ -19,7 +19,10 @@ class User(db.Model, Base):
     create_date = Column(Date, nullable=False)
     last_login = Column(DateTime, nullable=True)
     address = relationship("Address", back_populates="user", cascade="all, delete", passive_deletes=True)
-    address_id = Column(Integer)
+    address_id = Column(Integer, nullable=True)
+    documents = relationship('Document', backref='user', cascade="all, delete", passive_deletes=True)
+    recipients = relationship('Recipient', backref='user', cascade="all, delete", passive_deletes=True)
+    doc_count = Column(Integer, nullable=False)
 
 class Address(db.Model, Base):
     __tablename__ = "addresses"
@@ -40,5 +43,15 @@ class Document(db.Model, Base):
     payment_amount = Column(Integer, nullable=False)
     payment_type = Column(String(30), nullable=False)
     recipient_id = Column(Integer, ForeignKey('recipients.recipient_id'))
-    user_id = Column(ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    recipient = relationship('Recipient', backref='recipient')
 
+
+class Recipient(db.Model, Base):
+    __tablename__ = "recipients"
+    recipient_id = Column(Integer, primary_key=True)
+    name = Column(String(300), nullable=False)
+    phone = Column(String(30), nullable=False)
+    address = Column(String(300), nullable=False)
+    email = Column(String(250), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.user_id', ondelete="CASCADE"))
