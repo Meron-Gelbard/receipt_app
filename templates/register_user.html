@@ -7,18 +7,25 @@
 <body>
     <form action="{{ url_for('register_user') }}" method="POST" novalidate>
        {{ form.csrf_token }}
-        {{ form.first_name.label }}<br>{{ form.first_name }}<br>
-        {{ form.last_name.label }}<br>{{ form.last_name }}<br>
-        {{ form.email.label }}<br>{{ form.email }}<br>
-        {{ form.phone.label }}<br>{{ form.phone }}<br>
-        {{ form.company_name.label }}<br>{{ form.company_name }}<br>
-        {{ form.password.label }}<br>{{ form.password }}<br>
-        {{ form.pass_repeat.label }}<br>{{ form.pass_repeat }}<br>
-        {{ form.country.label }}<br>{{ form.country }}<br>
-        {{ form.city.label }}<br>{{ form.city }}<br>
-        {{ form.address.label }}<br>{{ form.address }}<br>
-        <br>
+        {% for field in form %}
+            {% if field not in [form.csrf_token, form.submit] %}
+                <br><br>{{ field.label }}<br>{{ field() }}
+                    {% if field.errors: %}
+                        {% for error in field.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+            {% endif %}
+        {% endfor %}
+        <br><br><br>
         {{ form.submit(class_="btn btn-primary") }}
-      </form>
+      </form><br>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <h2 class=flash_msg>{{ message }}</h2>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
 </body>
 </html>

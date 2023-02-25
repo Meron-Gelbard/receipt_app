@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import text
+from sqlalchemy import text, exc
 from db_architecture import User, Address, Document, Recipient
 from main import app, db
 
@@ -18,8 +18,8 @@ def drop_database():
 def register_new_user(**kwargs):
     with app.app_context():
         new_user = User(
-            first_name=kwargs['first_name'],
-            last_name=kwargs['last_name'],
+            first_name=kwargs['first_name'].capitalize(),
+            last_name=kwargs['last_name'].capitalize(),
             user_name=(kwargs['first_name'] + kwargs['last_name']).lower(),
             email=kwargs['email'],
             phone=kwargs['phone'],
@@ -37,11 +37,16 @@ def register_new_user(**kwargs):
             user=new_user)
 
         db.session.add(user_address)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except exc.SQLAlchemyError as error:
+            return {'error': 'Database Error', 'details': (str(error.__dict__['orig']))}
+
         db.session.execute(text(f"UPDATE users "
                                 f"SET address_id={user_address.address_id} "
                                 f"WHERE user_id={user_address.user_id}"))
         db.session.commit()
+        return 'OK'
 
 
 def create_document(**kwargs):

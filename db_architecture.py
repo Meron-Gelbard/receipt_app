@@ -1,12 +1,13 @@
 from sqlalchemy import Column, Integer, ForeignKey, String, Date, DateTime
 from sqlalchemy.orm import relationship, Mapped, declarative_base
 from main import db
+from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 
 Base = declarative_base()
 
 
 # CONFIGURE TABLES
-class User(db.Model, Base):
+class User(UserMixin, db.Model, Base):
     __tablename__ = "users"
     user_id: Mapped[int] = Column(Integer, primary_key=True)
     first_name = Column(String(50), nullable=False)
@@ -23,6 +24,7 @@ class User(db.Model, Base):
     documents = relationship('Document', backref='user', cascade="all, delete", passive_deletes=True)
     recipients = relationship('Recipient', backref='user', cascade="all, delete", passive_deletes=True)
     doc_count = Column(Integer, nullable=False)
+
 
 class Address(db.Model, Base):
     __tablename__ = "addresses"
