@@ -9,7 +9,7 @@ Base = declarative_base()
 # CONFIGURE TABLES
 class User(UserMixin, db.Model, Base):
     __tablename__ = "users"
-    user_id: Mapped[int] = Column(Integer, primary_key=True)
+    id: Mapped[int] = Column(Integer, primary_key=True)
     first_name = Column(String(50), nullable=False)
     last_name = Column(String(50), nullable=False)
     user_name = Column(String(100), nullable=False, unique=True)
@@ -25,6 +25,9 @@ class User(UserMixin, db.Model, Base):
     recipients = relationship('Recipient', backref='user', cascade="all, delete", passive_deletes=True)
     doc_count = Column(Integer, nullable=False)
 
+    def get_id(self):
+        return self.id
+
 
 class Address(db.Model, Base):
     __tablename__ = "addresses"
@@ -33,7 +36,7 @@ class Address(db.Model, Base):
     city = Column(String(100), nullable=False)
     address = Column(String(300), nullable=False, unique=True)
     user = relationship("User", back_populates="address")
-    user_id = Column(ForeignKey("users.user_id", ondelete="CASCADE"))
+    user_id = Column(ForeignKey("users.id", ondelete="CASCADE"))
 
 
 class Document(db.Model, Base):
@@ -45,7 +48,7 @@ class Document(db.Model, Base):
     payment_amount = Column(Integer, nullable=False)
     payment_type = Column(String(30), nullable=False)
     recipient_id = Column(Integer, ForeignKey('recipients.recipient_id'))
-    user_id = Column(Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     recipient = relationship('Recipient', backref='recipient')
 
 
@@ -56,4 +59,4 @@ class Recipient(db.Model, Base):
     phone = Column(String(30), nullable=False)
     address = Column(String(300), nullable=False)
     email = Column(String(250), nullable=False)
-    user_id = Column(Integer, ForeignKey('users.user_id', ondelete="CASCADE"))
+    user_id = Column(Integer, ForeignKey('users.id', ondelete="CASCADE"))

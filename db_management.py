@@ -44,9 +44,9 @@ def register_new_user(**kwargs):
 
         db.session.execute(text(f"UPDATE users "
                                 f"SET address_id={user_address.address_id} "
-                                f"WHERE user_id={user_address.user_id}"))
+                                f"WHERE id={user_address.user_id}"))
         db.session.commit()
-        return 'OK'
+        return new_user
 
 
 def create_document(**kwargs):

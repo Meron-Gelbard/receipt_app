@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Login</title>
+</head>
+<body>
+  <form action="{{ url_for('login') }}" method="POST" novalidate>
+       {{ form.csrf_token }}
+        {% for field in form %}
+            {% if field not in [form.csrf_token, form.submit, form.sign_up] %}
+                <br><br>{{ field.label }}<br>{{ field() }}
+                    {% if field.errors: %}
+                        {% for error in field.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+            {% endif %}
+        {% endfor %}
+        <br><br><br>
+        {{ form.submit(class_="btn btn-primary") }}
+      <br><br><br>
+      </form><br>
+  <a href='/register'><button>Register</button></a>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <h2 class=flash_msg>{{ message }}</h2>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+</body>
+</html>

@@ -1,6 +1,6 @@
 
 from sqlalchemy import create_engine, exc
-from flask import Flask
+from flask import Flask, flash
 from flask_sqlalchemy import SQLAlchemy
 import requests
 
@@ -26,21 +26,39 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app, session_options={"autoflush": False})
 
 
-
-
 class MessageManager:
     def __init__(self):
         self.messages = ['']
 
-    def database_error(self, details):
+    def clear(self):
+        self.messages = ['']
+        self.flash_messages()
+
+    def flash_messages(self):
+        for msg in self.messages:
+            flash(msg)
+
+    def login_messages(self, result):
         self.messages = []
-        if 'user_name' in details:
+        if result == 'user not found':
+            self.messages.append('User email not found, Please try again')
+        if result == 'login OK':
+            self.messages.append('Logged in successfully.')
+        if result == 'pass error':
+            self.messages.append('Wrong Password. Please try again.')
+        self.flash_messages()
+
+
+    def database_error(self, result):
+        if 'user_name' in result:
             self.messages.append('This user name already exists.')
-        if 'address' in details:
+        if 'address' in result:
             self.messages += ['This address is already in use.',
                               'Please be more specific if needed or choose a different address.']
-        if 'email' in details:
+        if 'email' in result:
             self.messages.append('This E-Mail address is already in use.')
+        self.flash_messages()
+
 
     def form_validation_error(self, errors):
         self.messages = []
@@ -63,6 +81,7 @@ class MessageManager:
                     break
             if break_outer:
                 break
+        self.flash_messages()
 
 
 message_manager = MessageManager()
@@ -70,6 +89,5 @@ message_manager = MessageManager()
 
 # TODO - add defaults to selection fields
 # TODO - choose from past recipients on doc creation
-# TODO - create login system
 # TODO - add currency selection
 # TODO - autopopulate form when known recipient found (even cross users)

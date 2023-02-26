@@ -10,5 +10,8 @@
     <h3>Email Address: {{ user.email }}</h3>
     <h3>Phone Number: {{ user.phone }}</h3>
     <h3>Company: {{ user.company_name }}</h3>
+<br><br><br>
+<a href={{ url_for('new_document', user_name=user.user_name) }}><button>New Document</button></a>
+<span><a href='/logout'><button>Log Out</button></a></span>
 </body>
 </html>
