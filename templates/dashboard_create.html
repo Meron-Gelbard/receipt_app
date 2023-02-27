@@ -1,0 +1,62 @@
+   <body class="sb-nav-fixed">
+{% include "navbar.html" %}
+        <div id="layoutSidenav">
+        <div id="layoutSidenav_nav">
+            {% include "side_nav.html" %}
+        </div>
+            <div id="layoutSidenav_content">
+                <main>
+                    <div class="container-fluid px-4">
+                        <h1 class="mt-4">{{ user.first_name }} {{ user.last_name }}'s Dashboard</h1>
+                        <ol class="breadcrumb mb-4">
+                            <li class="breadcrumb-item active">Create new document from {{ user.company_name }}</li>
+                        </ol>
+                        <div class="row">
+<!--                            colored labels -->
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card bg-primary text-white mb-4">
+                                    <div class="card-body">Issued Documents</div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card bg-primary text-white mb-4">
+                                    <div class="card-body">Create Document</div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card bg-primary text-white mb-4">
+                                    <div class="card-body">Customer Management</div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <div class="card bg-primary text-white mb-4">
+                                    <div class="card-body">Statistics</div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+  <form action="{{ url_for('new_document', user_name=user.user_name) }}" method="POST" novalidate>
+       {{ form.csrf_token }}
+        {% for field in form %}
+            {% if field not in [form.csrf_token, form.submit] %}
+                <br><br>{{ field.label }}<br>{{ field() }}
+                    {% if field.errors: %}
+                        {% for error in field.errors %}
+                            <span>{{ error }}</span>
+                        {% endfor %}
+                    {% endif %}
+            {% endif %}
+        {% endfor %}
+        <br><br><br>
+        {{ form.submit(class_="btn btn-primary") }}
+      </form><br>
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            {% for message in messages %}
+              <h2 class=flash_msg>{{ message }}</h2>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+    </main>
+</body>
+
