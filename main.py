@@ -1,5 +1,5 @@
 
-from sqlalchemy import create_engine, exc
+from sqlalchemy import create_engine
 from flask import Flask, flash
 from flask_sqlalchemy import SQLAlchemy
 import requests
@@ -13,7 +13,11 @@ DB_USERN = 'postgres'
 # make env variable later...
 SQLALCHEMY_DB_URI = f'postgresql+psycopg2://{DB_USERN}:{SECRET}@{DB_HOST_NAME}/{DB_NAME}'
 api_key = 'def31c8d33834a5aa3f352665bd954f5'
-client_details = requests.get(f'https://api.ipgeolocation.io/ipgeo?apiKey={api_key}').json()
+try:
+    client_details = requests.get(f'https://api.ipgeolocation.io/ipgeo?apiKey={api_key}').json()
+except Exception:
+    client_details = None
+
 engine = create_engine(SQLALCHEMY_DB_URI)
 
 app = Flask(__name__)
@@ -91,3 +95,5 @@ message_manager = MessageManager()
 # TODO - choose from past recipients on doc creation
 # TODO - add currency selection
 # TODO - autopopulate form when known recipient found (even cross users)
+# TODO - implement remember password in login and forgot password function page
+#       (maybe keep unhashed passwords as env-variable)

@@ -22,7 +22,8 @@ class CountrySelectField(SelectField):
     def __init__(self, *args, **kwargs):
         super(CountrySelectField, self).__init__(*args, **kwargs)
         self.choices = [country.name for country in pycountry.countries]
-        self.default = client_details["country_name"]
+        if client_details:
+            self.default = client_details["country_name"]
 
 
 def password_validation(form, field):

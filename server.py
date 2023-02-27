@@ -1,9 +1,9 @@
 from urllib.parse import urlparse, urljoin
-from flask import render_template, redirect, flash, request, abort
+from flask import render_template, redirect, request, abort
 from db_management import get_user, register_new_user, create_document, User
 from forms import *
 from main import app, db, message_manager
-from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
+from flask_login import login_user, LoginManager, login_required, current_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import timedelta
 
@@ -36,7 +36,7 @@ def home_redirect():
     if logged_check():
         user_name = current_user.user_name
         message_manager.clear()
-        return redirect(f'{user_name}/details')
+        return redirect(f'{user_name}/dashboard')
     else:
         return redirect(f'/login')
 
@@ -49,18 +49,19 @@ def logout():
 
 @app.route('/login', methods=["POST", "GET"])
 def login():
+    message_manager.clear()
     with app.app_context():
         form = LoginForm()
         if form.validate_on_submit():
             user_2_login = User.query.filter_by(email=form.email.data).first()
             if not user_2_login:
                 message_manager.login_messages('user not found')
-                return render_template("login.html", form=form)
+                return render_template("login_new.html", form=form)
             elif user_2_login:
                 password_ok = check_password_hash(pwhash=user_2_login.password, password=form.password.data)
                 if not password_ok:
                     message_manager.login_messages('pass error')
-                    return render_template("login.html", form=form)
+                    return render_template("login_new.html", form=form)
                 elif password_ok:
                     login_user(user_2_login, remember=True, duration=timedelta(minutes=30))
                     # message_manager.login_messages('login OK')
@@ -68,29 +69,18 @@ def login():
                     if not is_safe_url(_next):
                         return abort(400)
                     message_manager.clear()
-                    return redirect(f'/{user_2_login.user_name}/details')
+                    return redirect(f'/{user_2_login.user_name}/dashboard')
         message_manager.form_validation_error(form.errors.items())
-        return render_template("login.html", form=form)
+        return render_template("login_new.html", form=form)
 
 
-@app.route(f'/<user_name>/details')
+@app.route('/<user_name>/dashboard')
 @login_required
-def user_details(user_name):
+def user_dashboard(user_name):
     user = get_user(user_name)
     if user:
         message_manager.clear()
-        return render_template('user_details.html', user=user, logged_in=logged_check())
-    else:
-        return render_template('error_page.html', error='user not found', user=user_name)
-
-
-@app.route('/<user_name>/documents')
-@login_required
-def user_documents(user_name):
-    user = get_user(user_name)
-    if user:
-        message_manager.clear()
-        return render_template('user_documents.html', user=user, logged_in=logged_check())
+        return render_template('user_dashboard.html', user=user, logged_in=logged_check())
     else:
         return render_template('error_page.html', error='user not found', user=user_name)
 
@@ -116,11 +106,11 @@ def register_user():
                 user_2_login = User.query.filter_by(user_name=user_name).first()
                 login_user(user_2_login, remember=True, duration=timedelta(minutes=30))
                 # message_manager.login_messages('login OK')
-                return redirect(f'/{user_name}/details')
+                return redirect(f'/{user_name}/dashboard')
             elif response['error'] == 'Database Error':
                 message_manager.database_error(response['details'])
         message_manager.form_validation_error(form.errors.items())
-        return render_template("register_user.html", form=form)
+        return render_template("register_new.html", form=form)
 
 
 @app.route('/<user_name>/new_document', methods=["POST", "GET"])
