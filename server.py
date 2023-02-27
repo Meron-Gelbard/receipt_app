@@ -84,6 +84,16 @@ def user_documents(user_name):
     else:
         return render_template('error_page.html', error='user not found', user=user_name)
 
+@app.route('/<user_name>/dashboard/customers')
+@login_required
+def user_customers(user_name):
+    user = get_user(user_name)
+    if user:
+        message_manager.clear()
+        return render_template('dashboard_customers.html', user=user)
+    else:
+        return render_template('error_page.html', error='user not found', user=user_name)
+
 
 @app.route('/register', methods=["POST", "GET"])
 def register_user():
@@ -113,7 +123,7 @@ def register_user():
         return render_template("register_new.html", form=form)
 
 
-@app.route('/<user_name>/new_document', methods=["POST", "GET"])
+@app.route('/<user_name>/dashboard/create_document', methods=["POST", "GET"])
 @login_required
 def new_document(user_name):
     message_manager.clear()
@@ -134,9 +144,9 @@ def new_document(user_name):
         user.doc_count += 1
         db.session.commit()
         # Change later to redirect to the new document page!!
-        return redirect(f'/{user_name}/documents')
+        return redirect(f'/{user_name}/dashboard/documents')
     message_manager.form_validation_error(form.errors.items())
-    return render_template("new_document.html", form=form, user=user, logged_in=logged_check())
+    return render_template("dashboard_create.html", form=form, user=user, logged_in=logged_check())
 
 
 if __name__ == "__main__":

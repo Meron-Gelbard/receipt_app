@@ -17,19 +17,21 @@
                         <div class="row">
 <!--                            colored labels -->
                             <div class="col-xl-3 col-md-6">
-                                <div class="card bg-primary text-white mb-4">
+                                <div class="card bg-primary text-white mb-4 current_card">
                                     <div class="card-body">Issued Documents</div>
                                 </div>
                             </div>
                             <div class="col-xl-3 col-md-6">
+                                <a href="/{{ user.user_name }}/dashboard/create_document">
                                 <div class="card bg-primary text-white mb-4">
                                     <div class="card-body">Create Document</div>
-                                </div>
+                                </div></a>
                             </div>
                             <div class="col-xl-3 col-md-6">
+                                <a href="/{{ user.user_name }}/dashboard/customers">
                                 <div class="card bg-primary text-white mb-4">
                                     <div class="card-body">Customer Management</div>
-                                </div>
+                                </div></a>
                             </div>
                             <div class="col-xl-3 col-md-6">
                                 <div class="card bg-primary text-white mb-4">
