@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Kabalar - Login{% endblock %}
+{% block body %}
+    <body class="bg-primary">
+        <div id="layoutAuthentication">
+            <div id="layoutAuthentication_content">
+                <main>
+                    <div class="container">
+                        <div class="row justify-content-center">
+                            <div class="col-lg-5">
+                                <div class="card shadow-lg border-0 rounded-lg mt-5">
+                                    <div class="card-header"><h3 class="text-center font-weight-light my-4">Kabalar - User Login</h3></div>
+                                    <div class="card-body">
+                                        <form action="{{ url_for('login') }}" method="POST" novalidate>
+                                            {{ form.csrf_token }}
+
+                                                {% for field in form %}
+                                                    {% if field not in [form.csrf_token, form.submit, form.sign_up] %}
+                                                        {{ field.label }}<br>
+                                                        <div class="form-floating mb-3">
+                                                        {{ field(class="form-control") }}<br>
+                                                        {% if field.errors: %}
+                                                            {% for error in field.errors %}
+                                                                <span>{{ error }}</span>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                        </div>
+                                                    {% endif %}
+                                                {% endfor %}
+
+                                            <div class="form-check mb-3">
+                                                {% with messages = get_flashed_messages() %}
+                                                  {% if messages %}
+                                                    {% for message in messages %}
+                                                      <span class=flash_msg>{{ message }}</span>
+                                                    {% endfor %}
+                                                  {% endif %}
+                                                {% endwith %}
+                                            </div>
+                                            <div class="d-flex align-items-center justify-content-between mt-4 mb-0">
+                                                <a href='/register' class="btn btn-primary">Register</a>
+                                                {{ form.submit(class_="btn btn-primary") }}
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="card-footer text-center py-3">
+<!--                                        some other stuff can be placed here - login form footer-->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+
+    <div id="layoutAuthentication_footer">
+    {% include "footer.html" %}
+    </div>
+    </body>
+
+{% endblock %}
+
