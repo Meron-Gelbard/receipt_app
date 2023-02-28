@@ -1,55 +1,59 @@
 <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
-        <div class="sb-sidenav-menu">
-            <div class="nav">
-                <div class="sb-sidenav-menu-heading">{{ user.company_name }}</div>
-                <a class="nav-link" href="index.html">
-                    <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
-                    Dashboard
-                </a>
-                <a class="nav-link" href="index.html">
-                    <div class="sb-nav-link-icon">
-                    <i class="fas fa-user"></i></div>{{ user.first_name }}'s Profile
-                </a>
-                <div class="sb-sidenav-menu-heading">Management</div>
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseDocuments" aria-expanded="false" aria-controls="collapseDocuments">
-                    <div class="sb-nav-link-icon"><i class="fas fa-book"></i></div>
-                    Documents
-                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                </a>
-                <div class="collapse" id="collapseDocuments" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                    <nav class="sb-sidenav-menu-nested nav">
-                        <a class="nav-link" href="/{{ user.user_name }}/dashboard/documents">Receipts / Invoices</a>
-                        <a class="nav-link" href="/{{ user.user_name }}/dashboard/documents">Job Orders / Quotations</a>
-                    </nav>
-                </div>
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseCreate" aria-expanded="false" aria-controls="collapseCreate">
-                    <div class="sb-nav-link-icon"><i class="fas fa-marker"></i></div>
-                    Create Document
-                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                </a>
-                <div class="collapse" id="collapseCreate" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                    <nav class="sb-sidenav-menu-nested nav">
-                        <a class="nav-link" href="/{{ user.user_name }}/dashboard/create_document">Receipt / Invoice</a>
-                        <a class="nav-link" href="/{{ user.user_name }}/dashboard/create_document">Job Order / Quotation</a>
-                    </nav>
-                </div>
-                <a class="nav-link" href="/{{ user.user_name }}/dashboard/customers">
-                    <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
-                    Customers
-                </a>
-                <div class="sb-sidenav-menu-heading">Statistics</div>
-                <a class="nav-link" href="tables.html">
-                    <div class="sb-nav-link-icon"><i class="fas fa-calculator"></i></div>
-                    Business Statistics
-                </a>
-                <a class="nav-link" href="tables.html">
-                    <div class="sb-nav-link-icon"><i class="fas fa-user-graduate"></i></div>
-                    Customer Statistics
-                </a>
+    <div class="sb-sidenav-menu">
+        <div class="nav">
+            <div class="sb-sidenav-menu-heading">{{ user.company_name }}</div>
+            <a class="nav-link" href="index.html">
+                <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+                Dashboard
+            </a>
+            <a class="nav-link" href="index.html">
+                <div class="sb-nav-link-icon">
+                    <i class="fas fa-user"></i></div>
+                {{ user.first_name }}'s Profile
+            </a>
+            <div class="sb-sidenav-menu-heading">Management</div>
+            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseDocuments"
+               aria-expanded="false" aria-controls="collapseDocuments">
+                <div class="sb-nav-link-icon"><i class="fas fa-book"></i></div>
+                Documents
+                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+            </a>
+            <div class="collapse" id="collapseDocuments" aria-labelledby="headingOne"
+                 data-bs-parent="#sidenavAccordion">
+                <nav class="sb-sidenav-menu-nested nav">
+                    <a class="nav-link" href="/{{ user.user_name }}/dashboard/documents">Receipts / Invoices</a>
+                    <a class="nav-link" href="/{{ user.user_name }}/dashboard/documents">Job Orders / Quotations</a>
+                </nav>
             </div>
+            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseCreate"
+               aria-expanded="false" aria-controls="collapseCreate">
+                <div class="sb-nav-link-icon"><i class="fas fa-marker"></i></div>
+                Create Document
+                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+            </a>
+            <div class="collapse" id="collapseCreate" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
+                <nav class="sb-sidenav-menu-nested nav">
+                    <a class="nav-link" href="/{{ user.user_name }}/dashboard/create_document">Receipt / Invoice</a>
+                    <a class="nav-link" href="/{{ user.user_name }}/dashboard/create_document">Job Order / Quotation</a>
+                </nav>
+            </div>
+            <a class="nav-link" href="/{{ user.user_name }}/dashboard/customers">
+                <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
+                Customers
+            </a>
+            <div class="sb-sidenav-menu-heading">Statistics</div>
+            <a class="nav-link" href="tables.html">
+                <div class="sb-nav-link-icon"><i class="fas fa-calculator"></i></div>
+                Business Statistics
+            </a>
+            <a class="nav-link" href="tables.html">
+                <div class="sb-nav-link-icon"><i class="fas fa-user-graduate"></i></div>
+                Customer Statistics
+            </a>
         </div>
-        <div class="sb-sidenav-footer">
-            <div class="small">Logged in as:</div>
-            {{ user.first_name }} {{ user.last_name }}
-        </div>
+    </div>
+    <div class="sb-sidenav-footer">
+        <div class="small">Logged in as:</div>
+        {{ user.first_name }} {{ user.last_name }}
+    </div>
 </nav>

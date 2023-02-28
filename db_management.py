@@ -27,7 +27,6 @@ def register_new_user(**kwargs):
             password=kwargs['password'],
             doc_count=0,
             create_date=datetime.now())
-
         db.session.add(new_user)
 
         user_address = Address(
@@ -35,16 +34,15 @@ def register_new_user(**kwargs):
             city=kwargs['city'],
             address=kwargs['address'],
             user=new_user)
-
         db.session.add(user_address)
+
         try:
             db.session.commit()
         except exc.SQLAlchemyError as error:
             return {'error': 'Database Error', 'details': (str(error.__dict__['orig']))}
 
         db.session.execute(text(f"UPDATE users "
-                                f"SET address_id={user_address.address_id} "
-                                f"WHERE id={user_address.user_id}"))
+                                f"SET address_id={user_address.address_id} WHERE id={user_address.user_id}"))
         db.session.commit()
         return new_user
 
@@ -58,7 +56,6 @@ def create_document(**kwargs):
             subject=kwargs['subject'],
             payment_amount=kwargs['payment_amount'],
             payment_type=kwargs['payment_type'])
-
         db.session.add(new_document)
 
         newdoc_recipient = Recipient(
@@ -67,17 +64,13 @@ def create_document(**kwargs):
             address=kwargs['recipient_address'],
             email=kwargs['recipient_email'],
             user_id=kwargs['user_id'])
-
         db.session.add(newdoc_recipient)
         db.session.commit()
+
         db.session.execute(text(f"UPDATE documents "
-                                f"SET recipient_id={newdoc_recipient.recipient_id} "
-                                f"WHERE doc_id={new_document.doc_id}"))
+                                f"SET recipient_id={newdoc_recipient.recipient_id} WHERE doc_id={new_document.doc_id}"))
         db.session.commit()
 
 
 def get_user(user_name):
     return User.query.filter_by(user_name=user_name).first()
-
-
-

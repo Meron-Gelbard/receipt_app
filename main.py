@@ -1,4 +1,3 @@
-
 from sqlalchemy import create_engine
 from flask import Flask, flash
 from flask_sqlalchemy import SQLAlchemy
@@ -9,8 +8,9 @@ SECRET = '1111'
 DB_HOST_NAME = 'localhost'
 DB_NAME = 'receipt_app1'
 DB_USERN = 'postgres'
+APP_KEY = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
 
-# make env variable later...
+# make environment variables later...
 SQLALCHEMY_DB_URI = f'postgresql+psycopg2://{DB_USERN}:{SECRET}@{DB_HOST_NAME}/{DB_NAME}'
 api_key = 'def31c8d33834a5aa3f352665bd954f5'
 try:
@@ -21,8 +21,7 @@ except Exception:
 engine = create_engine(SQLALCHEMY_DB_URI)
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
-
+app.config['SECRET_KEY'] = {APP_KEY}
 
 # CONNECT TO DB
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DB_URI
@@ -52,7 +51,6 @@ class MessageManager:
             self.messages.append('Wrong Password. Please try again.')
         self.flash_messages()
 
-
     def database_error(self, result):
         if 'user_name' in result:
             self.messages.append('This user name already exists.')
@@ -62,7 +60,6 @@ class MessageManager:
         if 'email' in result:
             self.messages.append('This E-Mail address is already in use.')
         self.flash_messages()
-
 
     def form_validation_error(self, errors):
         self.messages = []
@@ -76,7 +73,8 @@ class MessageManager:
                     self.messages.append(
                         'Please Repeat a matching password.')
                 if err == '* Invalid Password':
-                    self.messages.append('Password must contain at least one uppercase, one lowercase and one number character.')
+                    self.messages.append(
+                        'Password must contain at least one uppercase, one lowercase and one number character.')
                     break_outer = True
                     break
                 if err == '* Required':
@@ -89,11 +87,3 @@ class MessageManager:
 
 
 message_manager = MessageManager()
-
-
-# TODO - add defaults to selection fields
-# TODO - choose from past recipients on doc creation
-# TODO - add currency selection
-# TODO - autopopulate form when known recipient found (even cross users)
-# TODO - implement remember password in login and forgot password function page
-#       (maybe keep unhashed passwords as env-variable)

@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, ForeignKey, String, Date, DateTime
 from sqlalchemy.orm import relationship, Mapped, declarative_base
 from main import db
-from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
+from flask_login import UserMixin
 
 Base = declarative_base()
 
@@ -24,6 +24,14 @@ class User(UserMixin, db.Model, Base):
     documents = relationship('Document', backref='user', cascade="all, delete", passive_deletes=True)
     recipients = relationship('Recipient', backref='user', cascade="all, delete", passive_deletes=True)
     doc_count = Column(Integer, nullable=False)
+
+    def get_user_attrs(self):
+        user_attrs = {}
+        for key, value in vars(self).items():
+            if key not in ['id', 'password', 'address_id', 'documents', 'recipients',
+                           'get_user_attrs', 'get_id', '_sa_instance_state']:
+                user_attrs[key] = value
+        return user_attrs
 
     def get_id(self):
         return self.id
