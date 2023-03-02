@@ -5,7 +5,7 @@ from forms import *
 from main import app, db, message_manager
 from flask_login import login_user, LoginManager, login_required, current_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 # start flask-login
 login_manager = LoginManager()
@@ -65,8 +65,9 @@ def login():
                     message_manager.login_messages('pass error')
                     return render_template("login_new.html", form=form)
                 elif password_ok:
-                    login_user(user_2_login)
-
+                    login_user(user_2_login, remember=False)
+                    user_2_login.last_login = datetime.now()
+                    db.session.commit()
                     # source url checker
                     _next = request.args.get('next')
                     if not is_safe_url(_next):

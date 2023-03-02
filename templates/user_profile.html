@@ -55,6 +55,12 @@
                         </div>
                     </div>
                 </div>
+                <div class="row">
+                        <ol class="breadcrumb mb-4">
+                            <li class="breadcrumb-item active">Last login: {{ user.last_login.strftime("%d/%m/%Y  |  %H:%M") }}  </li>
+                        </ol>
+                </div>
+            </div>
         </main>
         <div>
             {% include "footer.html" %}
