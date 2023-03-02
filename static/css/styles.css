@@ -11730,3 +11730,17 @@ body {
 .current_card {
     border-width: 4px;
 }
+
+.profile-value {
+    color: DimGray;
+}
+
+.profile_card {
+    width: 60%;
+}
+
+.user_update_form {
+    max-width: 15rem;
+    min-width: 15rem
+
+}

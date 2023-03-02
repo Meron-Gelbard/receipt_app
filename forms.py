@@ -51,6 +51,20 @@ class RegisterUserForm(FlaskForm):
     city = StringField("City:", validators=[InputRequired()])
     address = StringField("Full Address:", validators=[InputRequired()])
     submit = SubmitField("Register User")
+    submit_edit = SubmitField("Save Edits")
+
+
+class UpdateUserForm(FlaskForm):
+    first_name = StringField("First Name", validators=[InputRequired()])
+    last_name = StringField("Last Name", validators=[InputRequired()])
+    email = StringField("E-mail Address", validators=[InputRequired(),
+                                                      Email('* Invalid Email')])
+    phone = StringField("Phone Number", validators=[InputRequired()])
+    company_name = StringField("Company Name", validators=[InputRequired()])
+    country = CountrySelectField('Country', validators=[InputRequired()])
+    city = StringField("City:", validators=[InputRequired()])
+    address = StringField("Full Address:", validators=[InputRequired()])
+    submit = SubmitField("Save Edits")
 
 
 class NewDocumentForm(FlaskForm):

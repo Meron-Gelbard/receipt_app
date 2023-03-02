@@ -10,21 +10,48 @@
     <div id="layoutSidenav_content">
         <main>
             <div class="container-fluid px-4">
-                <h1 class="mt-4">{{ user.first_name }} {{ user.last_name }}'s Dashboard</h1>
+                <h1 class="mt-4">{{ user.first_name }} {{ user.last_name }}</h1>
                 <ol class="breadcrumb mb-4">
-                    <li class="breadcrumb-item active">Documents issued from {{ user.company_name }}</li>
+                    <li class="breadcrumb-item active">User Profile </li>
                 </ol>
                 <div class="row">
-                    <div class="card mb-4">
+                    <div class="card mb-4 profile_card">
                         <div class="card-body">
-                            {% for attr, value in user_attrs.items(): %}
-                            <span></span>
-                        </div>
-                        <!--                            colored labels -->
-                        <div class="col-xl-3 col-md-6">
-                            <div class="card bg-primary text-white mb-4 current_card">
-                                <div class="card-body">Issued Documents</div>
-                            </div>
+                            {% if not edit %}
+                                {% for attr, value in user_attrs.items(): %}
+                                <span class="h4 mt-1 d-sm-inline"> {{ form[attr].label }}:&nbsp&nbsp&nbsp </span>
+                                <span class="h5 mt-1 d-sm-inline profile-value"><i> {{ value }} </i></span>
+                                <br><br>
+                                {% endfor %}
+                            <a href="{{ url_for('user_profile', user_name=user.user_name, edit=True) }}" class="btn btn-primary">Edit</a>
+                            {% elif edit %}
+                            <form action="{{ url_for('user_profile', user_name=user.user_name, edit=True) }}" method="POST" novalidate>
+                                {{ form.csrf_token }}
+                                {% for attr, value in user_attrs.items(): %}
+                                    <span class="h4 mt-1 d-sm-inline"> {{ form[attr].label }}:&nbsp&nbsp&nbsp </span>
+                                    <span>{{ form[attr](value=value, class="user_update_form") }}</span>
+                                    {% if form[attr].errors: %}
+                                        {% for error in form[attr].errors %}
+                                            <span class="flash_msg">{{ error }}</span>
+                                        {% endfor %}
+                                    {% endif %}
+                                <br><br>
+                                {% endfor %}
+                                <div class="form-check mb-3">
+                                    {% with messages = get_flashed_messages() %}
+                                        {% if messages %}
+                                            {% for message in messages %}
+                                                <span class="flash_msg">{{ message }}</span>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endwith %}
+                                </div>
+                                <div class="mt-4 mb-0">
+                                        {{ form.submit(class_="btn btn-primary btn-block") }}
+                                    </div>
+                                </form>
+                            {% endif %}
+
                         </div>
                     </div>
                 </div>

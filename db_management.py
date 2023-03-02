@@ -14,6 +14,22 @@ def drop_database():
         db.session.remove()
         db.drop_all()
 
+def update_user_profile(user_name, update_params):
+    with app.app_context():
+        user = get_user(user_name)
+        address = get_address(user.id)
+        if user:
+            for attr, value in update_params['user_params'].items():
+                setattr(user, attr, value)
+            for attr, value in update_params['address_params'].items():
+                setattr(address, attr, value)
+            try:
+                response = db.session.commit()
+            except exc.SQLAlchemyError as error:
+                return {'error': 'Database Error', 'details': (str(error.__dict__['orig']))}
+            return response
+        # return {'error': 'user error', 'details': 'user not found'}
+
 
 def register_new_user(**kwargs):
     with app.app_context():
@@ -74,3 +90,11 @@ def create_document(**kwargs):
 
 def get_user(user_name):
     return User.query.filter_by(user_name=user_name).first()
+
+
+def get_address(user_id):
+    return Address.query.filter_by(user_id=user_id).first()
+
+
+def get_user_attrs(user):
+    return {**user.get_attrs(), **Address.query.filter_by(user_id=user.id).first().get_attrs()}

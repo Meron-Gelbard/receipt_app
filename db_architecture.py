@@ -25,11 +25,11 @@ class User(UserMixin, db.Model, Base):
     recipients = relationship('Recipient', backref='user', cascade="all, delete", passive_deletes=True)
     doc_count = Column(Integer, nullable=False)
 
-    def get_user_attrs(self):
+    def get_attrs(self):
         user_attrs = {}
         for key, value in vars(self).items():
-            if key not in ['id', 'password', 'address_id', 'documents', 'recipients',
-                           'get_user_attrs', 'get_id', '_sa_instance_state']:
+            if key not in ['id', 'password', 'address_id', 'documents', 'recipients', 'doc_count', 'create_date',
+                           'get_user_attrs', 'get_id', '_sa_instance_state', 'user_name', 'last_login']:
                 user_attrs[key] = value
         return user_attrs
 
@@ -45,6 +45,13 @@ class Address(db.Model, Base):
     address = Column(String(300), nullable=False, unique=True)
     user = relationship("User", back_populates="address")
     user_id = Column(ForeignKey("users.id", ondelete="CASCADE"))
+
+    def get_attrs(self):
+        address_attrs = {}
+        for key, value in vars(self).items():
+            if key not in ['_sa_instance_state', 'address_id', 'user_id']:
+                address_attrs[key] = value
+        return address_attrs
 
 
 class Document(db.Model, Base):

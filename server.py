@@ -1,6 +1,6 @@
 from urllib.parse import urlparse, urljoin
-from flask import render_template, redirect, request, abort
-from db_management import get_user, register_new_user, create_document, User
+from flask import render_template, redirect, request, abort, session, url_for
+from db_management import get_user, register_new_user, create_document, update_user_profile, User, get_user_attrs
 from forms import *
 from main import app, db, message_manager
 from flask_login import login_user, LoginManager, login_required, current_user, logout_user
@@ -65,7 +65,7 @@ def login():
                     message_manager.login_messages('pass error')
                     return render_template("login_new.html", form=form)
                 elif password_ok:
-                    login_user(user_2_login, remember=True, duration=timedelta(minutes=30))
+                    login_user(user_2_login)
 
                     # source url checker
                     _next = request.args.get('next')
@@ -73,7 +73,6 @@ def login():
                         return abort(400)
 
                     message_manager.clear()
-                    print(user_2_login.get_user_attrs())
                     return redirect(f'/{user_2_login.user_name}/dashboard/documents')
         message_manager.form_validation_error(form.errors.items())
         return render_template("login_new.html", form=form)
@@ -128,37 +127,59 @@ def register_user():
         return render_template("register_new.html", form=form)
 
 
-# Still developing...
+# @app.route('/<user_name>/profile/edit', methods=["POST", "GET"])
+# @login_required
+# def user_profile_edit(user_name):
+#     """Receives a user profile page call with the 'Edit' parameter set to True/False
+#     in order to redirect to profile page with correct state without 'Edit'
+#     parameter appearing in url"""
+#
+#     edit = request.args.get('edit')
+#     session['edit'] = edit
+#     return redirect(url_for('user_profile', user_name=user_name))
+
+
 @app.route('/<user_name>/profile', methods=["POST", "GET"])
-def user_profile(user_name, edit=False):
-    edit = False
+@login_required
+def user_profile(user_name):
+    edit = request.args.get('edit')
     user = get_user(user_name)
-    if edit:
-        with app.app_context():
-            form = RegisterUserForm()
+    form = UpdateUserForm()
+    user_attrs = get_user_attrs(user)
+    with app.app_context():
+        if edit:
             if form.validate_on_submit():
-                hashed_password = generate_password_hash(password=form.password.data, method='pbkdf2:sha256',
-                                                         salt_length=8)
-                response = register_new_user(
-                    first_name=form.first_name.data,
-                    last_name=form.last_name.data,
-                    email=form.email.data,
-                    phone=form.phone.data,
-                    company_name=form.company_name.data,
-                    password=hashed_password,
-                    country=form.country.data,
-                    city=form.city.data,
-                    address=form.address.data)
-                user_name = (form.first_name.data + form.last_name.data).lower()
-                if isinstance(response, User):
+                update_params = {
+                    'user_params':
+                        {"first_name": form.first_name.data,
+                         "last_name": form.last_name.data,
+                         "email": form.email.data,
+                         "phone": form.phone.data,
+                         "company_name": form.company_name.data,
+                         "user_name": f'{form.first_name.data.lower()}{form.last_name.data.lower()}'},
+                    'address_params':
+                        {"country": form.country.data,
+                         "city": form.city.data,
+                         "address": form.address.data}
+                    }
+
+                updated_response = update_user_profile(user_name, update_params)
+
+                if updated_response is None:
                     edit = False
-                    return render_template("user_profile.html", form=form, user=user, edit=edit)
-                elif response['error'] == 'Database Error':
-                    message_manager.database_error(response['details'])
+                    user = get_user(update_params['user_params']['user_name'])
+                    user_attrs = get_user_attrs(user)
+                    return redirect(f'/{user.user_name}/profile')
+                elif updated_response['error'] == 'Database Error':
+                    message_manager.database_error(updated_response['details'])
+                    return render_template("user_profile.html", form=form, user=user, edit=edit, user_attrs=user_attrs)
+                # elif user_updated['error'] == 'user error':
+                #     message_manager.login_messages(user_updated['details'])
             else:
                 message_manager.form_validation_error(form.errors.items())
-                return render_template("user_profile.html", form=form, user=user, edit=edit)
-    return render_template("user_profile.html", form=form, user=user, edit=edit, user_attrs=user.get_user_attrs())
+                edit = True
+                return render_template("user_profile.html", form=form, user=user, edit=edit, user_attrs=user_attrs)
+    return render_template("user_profile.html", form=form, user=user, edit=edit, user_attrs=user_attrs)
 
 
 @app.route('/<user_name>/dashboard/create_document', methods=["POST", "GET"])
@@ -187,4 +208,4 @@ def new_document(user_name):
 
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5001)
+    app.run(host='0.0.0.0', port=5001, debug=True)

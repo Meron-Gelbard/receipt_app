@@ -41,24 +41,27 @@ class MessageManager:
         for msg in self.messages:
             flash(msg)
 
-    def login_messages(self, result):
+    def login_messages(self, details):
         self.messages = []
-        if result == 'user not found':
-            self.messages.append('User email not found, Please try again')
-        if result == 'login OK':
+        if details == 'user not found':
+            self.messages.append('User not found, Please try again')
+        if details == 'login OK':
             self.messages.append('Logged in successfully.')
-        if result == 'pass error':
+        if details == 'pass error':
             self.messages.append('Wrong Password. Please try again.')
         self.flash_messages()
 
-    def database_error(self, result):
-        if 'user_name' in result:
+    def database_error(self, details):
+        if 'user_name' in details:
             self.messages.append('This user name already exists.')
-        if 'address' in result:
+        if 'address' in details:
             self.messages += ['This address is already in use.',
                               'Please be more specific if needed or choose a different address.']
-        if 'email' in result:
+        if 'email' in details:
             self.messages.append('This E-Mail address is already in use.')
+        self.flash_messages()
+        if 'company_name' in details:
+            self.messages.append('This company name is already in use. Only one account per company is allowed.')
         self.flash_messages()
 
     def form_validation_error(self, errors):

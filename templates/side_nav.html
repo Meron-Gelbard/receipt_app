@@ -2,11 +2,11 @@
     <div class="sb-sidenav-menu">
         <div class="nav">
             <div class="sb-sidenav-menu-heading">{{ user.company_name }}</div>
-            <a class="nav-link" href="index.html">
+            <a class="nav-link" href="/">
                 <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
                 Dashboard
             </a>
-            <a class="nav-link" href="index.html">
+            <a class="nav-link" href="/{{ user.user_name }}/profile">
                 <div class="sb-nav-link-icon">
                     <i class="fas fa-user"></i></div>
                 {{ user.first_name }}'s Profile
