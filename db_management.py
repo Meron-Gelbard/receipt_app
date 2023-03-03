@@ -86,6 +86,7 @@ def create_document(**kwargs):
         db.session.execute(text(f"UPDATE documents "
                                 f"SET recipient_id={newdoc_recipient.recipient_id} WHERE doc_id={new_document.doc_id}"))
         db.session.commit()
+        return new_document.doc_id
 
 
 def get_user(user_name):

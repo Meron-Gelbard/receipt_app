@@ -1,8 +1,10 @@
 from urllib.parse import urlparse, urljoin
 from flask import render_template, redirect, request, abort, session, url_for
-from db_management import get_user, register_new_user, create_document, update_user_profile, User, get_user_attrs
+from db_management import get_user, register_new_user, create_document, \
+    update_user_profile, User, get_user_attrs, Document
 from forms import *
 from main import app, db, message_manager
+from pdf_creator import create_pdf
 from flask_login import login_user, LoginManager, login_required, current_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import timedelta, datetime
@@ -190,7 +192,7 @@ def new_document(user_name):
     form = NewDocumentForm()
     user = get_user(user_name)
     if form.validate_on_submit():
-        create_document(
+        doc_id = create_document(
             user_id=user.id,
             doc_type=form.doc_type.data,
             subject=form.subject.data,
@@ -203,6 +205,8 @@ def new_document(user_name):
 
         user.doc_count += 1
         db.session.commit()
+        new_doc = Document.query.filter_by(doc_id=doc_id).first()
+        create_pdf(user=user, document=new_doc)
         return redirect(f'/{user_name}/dashboard/documents')
     message_manager.form_validation_error(form.errors.items())
     return render_template("dashboard_create.html", form=form, user=user, logged_in=logged_check())
