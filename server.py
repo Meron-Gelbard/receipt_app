@@ -4,7 +4,7 @@ from db_management import get_user, register_new_user, create_document, \
     update_user_profile, User, get_user_attrs, Document
 from forms import *
 from main import app, db, message_manager
-from pdf_creator import create_pdf
+from pdf_creator import DocPdf
 from flask_login import login_user, LoginManager, login_required, current_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import timedelta, datetime
@@ -53,6 +53,7 @@ def logout():
 
 @app.route('/login', methods=["POST", "GET"])
 def login():
+    session['new_doc'] = False
     message_manager.clear()
     with app.app_context():
         form = LoginForm()
@@ -84,10 +85,11 @@ def login():
 @app.route('/<user_name>/dashboard/documents')
 @login_required
 def user_documents(user_name):
+    new_doc = session.get('new_doc')
     user = get_user(user_name)
     if user:
         message_manager.clear()
-        return render_template('dashboard_docs.html', user=user)
+        return render_template('dashboard_docs.html', user=user, new_doc=new_doc)
     else:
         return render_template('error_page.html', error='user not found', user=user_name)
 
@@ -192,7 +194,7 @@ def new_document(user_name):
     form = NewDocumentForm()
     user = get_user(user_name)
     if form.validate_on_submit():
-        doc_id = create_document(
+        create_document(
             user_id=user.id,
             doc_type=form.doc_type.data,
             subject=form.subject.data,
@@ -205,12 +207,21 @@ def new_document(user_name):
 
         user.doc_count += 1
         db.session.commit()
-        new_doc = Document.query.filter_by(doc_id=doc_id).first()
-        create_pdf(user=user, document=new_doc)
-        return redirect(f'/{user_name}/dashboard/documents')
+        session['new_doc'] = True
+        return redirect(url_for('user_documents', user_name=user_name))
     message_manager.form_validation_error(form.errors.items())
     return render_template("dashboard_create.html", form=form, user=user, logged_in=logged_check())
 
+
+@app.route('/<user_name>/new_document_preview')
+@login_required
+def new_doc_pdf(user_name):
+    session['new_doc'] = False
+    user = get_user(user_name)
+    new_doc = Document.query.order_by(Document.doc_id.desc()).first()
+    doc_pdf = DocPdf(user=user, document=new_doc)
+
+    return doc_pdf.response
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5001, debug=True)

@@ -7,6 +7,12 @@
     <div id="layoutSidenav_nav">
         {% include "side_nav.html" %}
     </div>
+    {% if new_doc %}
+		<script>
+			var url = "{{ url_for('new_doc_pdf', user_name=user.user_name) }}";
+			window.open(url, "_blank");
+		</script>
+	{% endif %}
     <div id="layoutSidenav_content">
         <main>
             <div class="container-fluid px-4">
