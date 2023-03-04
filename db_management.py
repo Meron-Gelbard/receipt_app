@@ -24,10 +24,11 @@ def update_user_profile(user_name, update_params):
             for attr, value in update_params['address_params'].items():
                 setattr(address, attr, value)
             try:
-                response = db.session.commit()
+                db.session.commit()
+                return True
             except exc.SQLAlchemyError as error:
                 return {'error': 'Database Error', 'details': (str(error.__dict__['orig']))}
-            return response
+
         # return {'error': 'user error', 'details': 'user not found'}
 
 

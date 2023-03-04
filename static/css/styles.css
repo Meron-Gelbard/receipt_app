@@ -11744,3 +11744,10 @@ body {
     min-width: 15rem
 
 }
+
+.doc_pdf_btn {
+    border: none;
+    background-color: transparent;
+    color: inherit;
+    outline: none;
+}

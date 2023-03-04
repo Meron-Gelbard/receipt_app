@@ -7,7 +7,7 @@ from main import app, db, message_manager
 from pdf_creator import DocPdf
 from flask_login import login_user, LoginManager, login_required, current_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import timedelta, datetime
+from datetime import datetime
 
 # start flask-login
 login_manager = LoginManager()
@@ -69,8 +69,10 @@ def login():
                     return render_template("login_new.html", form=form)
                 elif password_ok:
                     login_user(user_2_login, remember=False)
+                    session['user_last_log'] = user_2_login.last_login.strftime("%d/%m/%Y  |  %H:%M")
                     user_2_login.last_login = datetime.now()
                     db.session.commit()
+
                     # source url checker
                     _next = request.args.get('next')
                     if not is_safe_url(_next):
@@ -82,27 +84,23 @@ def login():
         return render_template("login_new.html", form=form)
 
 
-@app.route('/<user_name>/dashboard/documents')
+@app.route('/<user_name>/dashboard/documents', methods=["POST", "GET"])
 @login_required
 def user_documents(user_name):
     new_doc = session.get('new_doc')
     user = get_user(user_name)
-    if user:
-        message_manager.clear()
-        return render_template('dashboard_docs.html', user=user, new_doc=new_doc)
-    else:
-        return render_template('error_page.html', error='user not found', user=user_name)
+    user.doc_count = Document.query.filter_by(user_id=user.id).count()
+    db.session.commit()
+    message_manager.clear()
+    return render_template('dashboard_docs.html', user=user, new_doc=new_doc)
 
 
 @app.route('/<user_name>/dashboard/customers')
 @login_required
 def user_customers(user_name):
     user = get_user(user_name)
-    if user:
-        message_manager.clear()
-        return render_template('dashboard_customers.html', user=user)
-    else:
-        return render_template('error_page.html', error='user not found', user=user_name)
+    message_manager.clear()
+    return render_template('dashboard_customers.html', user=user)
 
 
 @app.route('/register', methods=["POST", "GET"])
@@ -124,24 +122,12 @@ def register_user():
             user_name = (form.first_name.data + form.last_name.data).lower()
             if isinstance(response, User):
                 user_2_login = User.query.filter_by(user_name=user_name).first()
-                login_user(user_2_login, remember=True, duration=timedelta(minutes=30))
+                login_user(user_2_login, remember=False)
                 return redirect(f'/{user_name}/dashboard/documents')
             elif response['error'] == 'Database Error':
                 message_manager.database_error(response['details'])
         message_manager.form_validation_error(form.errors.items())
         return render_template("register_new.html", form=form)
-
-
-# @app.route('/<user_name>/profile/edit', methods=["POST", "GET"])
-# @login_required
-# def user_profile_edit(user_name):
-#     """Receives a user profile page call with the 'Edit' parameter set to True/False
-#     in order to redirect to profile page with correct state without 'Edit'
-#     parameter appearing in url"""
-#
-#     edit = request.args.get('edit')
-#     session['edit'] = edit
-#     return redirect(url_for('user_profile', user_name=user_name))
 
 
 @app.route('/<user_name>/profile', methods=["POST", "GET"])
@@ -170,21 +156,17 @@ def user_profile(user_name):
 
                 updated_response = update_user_profile(user_name, update_params)
 
-                if updated_response is None:
-                    edit = False
+                if updated_response:
                     user = get_user(update_params['user_params']['user_name'])
-                    user_attrs = get_user_attrs(user)
                     return redirect(f'/{user.user_name}/profile')
                 elif updated_response['error'] == 'Database Error':
                     message_manager.database_error(updated_response['details'])
-                    return render_template("user_profile.html", form=form, user=user, edit=edit, user_attrs=user_attrs)
-                # elif user_updated['error'] == 'user error':
-                #     message_manager.login_messages(user_updated['details'])
+                    return render_template("user_profile.html", form=form, user=user, edit=True, user_attrs=user_attrs)
             else:
                 message_manager.form_validation_error(form.errors.items())
-                edit = True
-                return render_template("user_profile.html", form=form, user=user, edit=edit, user_attrs=user_attrs)
-    return render_template("user_profile.html", form=form, user=user, edit=edit, user_attrs=user_attrs)
+                return render_template("user_profile.html", form=form, user=user, edit=True, user_attrs=user_attrs)
+    return render_template("user_profile.html", form=form, user=user,
+                           user_attrs=user_attrs, last_log=session['user_last_log'])
 
 
 @app.route('/<user_name>/dashboard/create_document', methods=["POST", "GET"])
@@ -205,7 +187,6 @@ def new_document(user_name):
             recipient_address=form.recipient_address.data,
             recipient_email=form.recipient_email.data)
 
-        user.doc_count += 1
         db.session.commit()
         session['new_doc'] = True
         return redirect(url_for('user_documents', user_name=user_name))
@@ -213,15 +194,20 @@ def new_document(user_name):
     return render_template("dashboard_create.html", form=form, user=user, logged_in=logged_check())
 
 
-@app.route('/<user_name>/new_document_preview')
+@app.route('/<user_name>/document_preview', methods=["POST", "GET"])
 @login_required
-def new_doc_pdf(user_name):
-    session['new_doc'] = False
+def view_doc_pdf(user_name):
     user = get_user(user_name)
-    new_doc = Document.query.order_by(Document.doc_id.desc()).first()
-    doc_pdf = DocPdf(user=user, document=new_doc)
-
+    if session['new_doc']:
+        new_doc = Document.query.order_by(Document.doc_id.desc()).first()
+        doc_pdf = DocPdf(user=user, document=new_doc)
+        session['new_doc'] = False
+    else:
+        doc_id = request.form['doc_id']
+        doc = Document.query.filter_by(doc_id=doc_id).first()
+        doc_pdf = DocPdf(user=user, document=doc)
     return doc_pdf.response
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5001, debug=True)
