@@ -4,6 +4,21 @@ from wtforms.validators import InputRequired, Email, EqualTo
 import re
 import pycountry
 from main import client_details
+import csv
+
+
+class CurrencySelectField(SelectField):
+    def __init__(self, *args, **kwargs):
+        super(CurrencySelectField, self).__init__(*args, **kwargs)
+        with open('static/assets/currencies.csv') as file:
+            csv_reader = csv.DictReader(file)
+            currencies = {}
+            for row in csv_reader:
+                currency = row["Currency"]
+                code = row["Code"]
+                symbol = row["Symbol"]
+                currencies[code] = {"currency": currency, "symbol": symbol}
+        self.choices = [f'{value["currency"]} - {code} / {value["symbol"]}' for code, value in currencies.items()]
 
 
 class DocTypeSelectField(SelectField):
@@ -48,10 +63,10 @@ class RegisterUserForm(FlaskForm):
     pass_repeat = PasswordField('Re-Enter Password', validators=[InputRequired(),
                                                                  EqualTo('password', '* Passwords must match.')])
     country = CountrySelectField('Country', validators=[InputRequired()])
-    city = StringField("City:", validators=[InputRequired()])
-    address = StringField("Full Address:", validators=[InputRequired()])
+    city = StringField("City", validators=[InputRequired()])
+    address = StringField("Full Address", validators=[InputRequired()])
+    website = StringField("Web Site URL")
     submit = SubmitField("Register User")
-    submit_edit = SubmitField("Save Edits")
 
 
 class UpdateUserForm(FlaskForm):
@@ -62,8 +77,9 @@ class UpdateUserForm(FlaskForm):
     phone = StringField("Phone Number", validators=[InputRequired()])
     company_name = StringField("Company Name", validators=[InputRequired()])
     country = CountrySelectField('Country', validators=[InputRequired()])
-    city = StringField("City:", validators=[InputRequired()])
-    address = StringField("Full Address:", validators=[InputRequired()])
+    city = StringField("City", validators=[InputRequired()])
+    address = StringField("Full Address", validators=[InputRequired()])
+    website = StringField("Web Site URL")
     submit = SubmitField("Save Edits")
 
 
@@ -84,3 +100,8 @@ class LoginForm(FlaskForm):
     email = StringField("Email", validators=[InputRequired(), Email()])
     password = PasswordField("Password", validators=[InputRequired()])
     submit = SubmitField("Log In")
+
+
+class ChangeCurrencyFrom(FlaskForm):
+    currency = CurrencySelectField('Select Currency', validators=[InputRequired()])
+    submit = SubmitField("Change")

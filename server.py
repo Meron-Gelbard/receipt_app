@@ -88,7 +88,7 @@ def login():
 @login_required
 def user_documents(user_name):
     new_doc = session.get('new_doc')
-    user = get_user(user_name)
+    user = get_user(user_name=user_name)
     user.doc_count = Document.query.filter_by(user_id=user.id).count()
     db.session.commit()
     message_manager.clear()
@@ -98,7 +98,7 @@ def user_documents(user_name):
 @app.route('/<user_name>/dashboard/customers')
 @login_required
 def user_customers(user_name):
-    user = get_user(user_name)
+    user = get_user(user_name=user_name)
     message_manager.clear()
     return render_template('dashboard_customers.html', user=user)
 
@@ -118,11 +118,13 @@ def register_user():
                 password=hashed_password,
                 country=form.country.data,
                 city=form.city.data,
-                address=form.address.data)
+                address=form.address.data,
+                website=form.website.data)
             user_name = (form.first_name.data + form.last_name.data).lower()
             if isinstance(response, User):
                 user_2_login = User.query.filter_by(user_name=user_name).first()
                 login_user(user_2_login, remember=False)
+                session['user_last_log'] = datetime.now().strftime("%d/%m/%Y  |  %H:%M")
                 return redirect(f'/{user_name}/dashboard/documents')
             elif response['error'] == 'Database Error':
                 message_manager.database_error(response['details'])
@@ -134,8 +136,10 @@ def register_user():
 @login_required
 def user_profile(user_name):
     edit = request.args.get('edit')
-    user = get_user(user_name)
+    edit_currency = request.args.get('edit_currency')
+    user = get_user(user_name=user_name)
     form = UpdateUserForm()
+    form_c = ChangeCurrencyFrom()
     user_attrs = get_user_attrs(user)
     with app.app_context():
         if edit:
@@ -157,7 +161,7 @@ def user_profile(user_name):
                 updated_response = update_user_profile(user_name, update_params)
 
                 if updated_response:
-                    user = get_user(update_params['user_params']['user_name'])
+                    user = get_user(user_name=update_params['user_params']['user_name'])
                     return redirect(f'/{user.user_name}/profile')
                 elif updated_response['error'] == 'Database Error':
                     message_manager.database_error(updated_response['details'])
@@ -165,8 +169,18 @@ def user_profile(user_name):
             else:
                 message_manager.form_validation_error(form.errors.items())
                 return render_template("user_profile.html", form=form, user=user, edit=True, user_attrs=user_attrs)
+        if edit_currency:
+            if form_c.validate_on_submit():
+                user = get_user(user_name=user_name)
+                user.currency = form_c.currency.data.split(' ')[-3]
+                db.session.commit()
+                return render_template("user_profile.html", form=form, user=user,
+                                       last_log=session['user_last_log'], user_attrs=user_attrs, currency=user.currency)
+            return render_template("user_profile.html", form=form, form_c=form_c, user=user,
+                                   last_log=session['user_last_log'], edit_currency=True, user_attrs=user_attrs)
     return render_template("user_profile.html", form=form, user=user,
-                           user_attrs=user_attrs, last_log=session['user_last_log'])
+                           user_attrs=user_attrs, last_log=session['user_last_log'],
+                           currency=user.currency)
 
 
 @app.route('/<user_name>/dashboard/create_document', methods=["POST", "GET"])
@@ -174,7 +188,7 @@ def user_profile(user_name):
 def new_document(user_name):
     message_manager.clear()
     form = NewDocumentForm()
-    user = get_user(user_name)
+    user = get_user(user_name=user_name)
     if form.validate_on_submit():
         create_document(
             user_id=user.id,
@@ -197,7 +211,7 @@ def new_document(user_name):
 @app.route('/<user_name>/document_preview', methods=["POST", "GET"])
 @login_required
 def view_doc_pdf(user_name):
-    user = get_user(user_name)
+    user = get_user(user_name=user_name)
     if session['new_doc']:
         new_doc = Document.query.order_by(Document.doc_id.desc()).first()
         doc_pdf = DocPdf(user=user, document=new_doc)

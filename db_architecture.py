@@ -24,12 +24,15 @@ class User(UserMixin, db.Model, Base):
     documents = relationship('Document', backref='user', cascade="all, delete", passive_deletes=True)
     recipients = relationship('Recipient', backref='user', cascade="all, delete", passive_deletes=True)
     doc_count = Column(Integer, nullable=False)
+    currency = Column(String(5), nullable=True)
+    website = Column(String(1000), nullable=True)
+
 
     def get_attrs(self):
         user_attrs = {}
         for key, value in vars(self).items():
             if key not in ['id', 'password', 'address_id', 'documents', 'recipients', 'doc_count', 'create_date',
-                           'get_user_attrs', 'get_id', '_sa_instance_state', 'user_name', 'last_login']:
+                           'get_user_attrs', 'get_id', '_sa_instance_state', 'user_name', 'last_login', 'currency']:
                 user_attrs[key] = value
         return user_attrs
 
@@ -57,10 +60,12 @@ class Address(db.Model, Base):
 class Document(db.Model, Base):
     __tablename__ = "documents"
     doc_id = Column(Integer, primary_key=True)
+    doc_serial_num = Column(String(30), nullable=False)
     doc_type = Column(String(30), nullable=False)
     doc_date = Column(Date, nullable=False)
     subject = Column(String(300), nullable=False)
     payment_amount = Column(Integer, nullable=False)
+    payment_currency = Column(String(5), nullable=False)
     payment_type = Column(String(30), nullable=False)
     recipient_id = Column(Integer, ForeignKey('recipients.recipient_id'))
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)

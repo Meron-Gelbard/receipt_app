@@ -57,7 +57,18 @@
                 </div>
                 <div class="row">
                         <ol class="breadcrumb mb-4">
-                            <li class="breadcrumb-item active">Last login: {{ last_log }}  </li>
+                            <li class="breadcrumb-item active">Last login: {{ last_log }}&nbsp;&nbsp;</li>
+                            {% if not edit_currency: %}
+                            <li class="breadcrumb-item active">&nbsp;&nbsp;Current Currency: {{ currency }}
+                            <span>&nbsp;-&nbsp;<a href="{{ url_for('user_profile', user_name=user.user_name, edit_currency=True) }}">Change</a></span></li>
+                            {% elif edit_currency %}
+                            <li class="breadcrumb-item active">&nbsp;&nbsp;Change Currency:
+                            <form action="{{ url_for('user_profile', user_name=user.user_name, edit_currency=True) }}" method="POST" novalidate>
+                                {{ form_c.csrf_token }}
+                                {{ form_c.currency() }} {{form.submit() }}
+                            </form>
+                            </li>
+                            {% endif %}
                         </ol>
                 </div>
             </div>

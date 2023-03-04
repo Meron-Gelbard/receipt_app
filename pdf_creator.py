@@ -1,27 +1,10 @@
 from io import BytesIO
-from flask import Flask, Response
+from flask import Response
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
-from reportlab.platypus import Paragraph
-from reportlab.lib.styles import ParagraphStyle
-from reportlab.lib.enums import TA_LEFT, TA_CENTER
 from datetime import datetime
 from db_architecture import Address
-
-# Define the font and font size for the paragraph
-FONT = "Helvetica"
-F_SIZE = 12
-br = '\n'
-
-# Define a ParagraphStyle object with the desired attributes
-P_STYLE = ParagraphStyle(
-    name="Normal",
-    fontName=FONT,
-    fontSize=F_SIZE,
-    leading=F_SIZE*1.2,
-    alignment=TA_CENTER,
-
-)
+from main import client_details
 
 
 class DocPdf:
@@ -36,16 +19,15 @@ class DocPdf:
         address_attrs = address.get_attrs()
 
         buffer = BytesIO()
-        # Set up the canvas with the background image
-        background_image = '/Users/merongelbard/Documents/projects/receipt app/static/assets/doc/doc_template.jpg'
+
+        background_image = 'static/assets/doc/doc_template.jpg'
         pdf_canvas = canvas.Canvas(buffer, pagesize=A4)
         pdf_canvas.setTitle(f'{self.user.company_name} - {self.document.doc_type} {self.document.doc_id}')
         pdf_canvas.setAuthor(f'{self.user.first_name} {self.user.last_name}')
         pdf_canvas.setCreator('Kabalar - Document Management')
 
         pdf_canvas.drawImage(background_image, 0, 0, width=A4[0], height=A4[1])
-    
-        # Set up the text fields and populate them with the dynamic data
+
         sender_name = pdf_canvas.beginText(18.7, A4[1] - 45.5)
         sender_name.textLine(f'{self.user.first_name} {self.user.last_name}')
     
@@ -56,7 +38,7 @@ class DocPdf:
         issue_date.textLine(datetime.now().strftime("Copy Issued On: %m/%d/%Y"))
     
         doc_header = pdf_canvas.beginText(18.7, A4[1] - 115.6)
-        doc_header.textLine(f'{self.document.doc_type} - {self.document.doc_id}')
+        doc_header.textLine(f'{self.document.doc_type} - {self.document.doc_serial_num.split("_")[2]}')
     
         list_date = pdf_canvas.beginText(68, A4[1] - 250)
         list_date.textLine(self.document.doc_date.strftime("%m/%d/%Y"))
@@ -66,10 +48,10 @@ class DocPdf:
     
         doc_subject = pdf_canvas.beginText(90.5, A4[1] - 328)
         doc_subject.textLine(self.document.subject)
-    
+
         payment_amount = pdf_canvas.beginText(434.5, A4[1] - 584)
-        payment_amount.textLine(str(self.document.payment_amount))
-    
+        payment_amount.textLine(f'{str(self.document.payment_amount)} {self.user.currency}')
+
         payment_type = pdf_canvas.beginText(433, A4[1] - 630)
         payment_type.textLine(self.document.payment_type)
 
@@ -98,11 +80,9 @@ class DocPdf:
         pdf_canvas.drawText(contact_b)
         pdf_canvas.drawText(contact_c)
 
-        # Save and close the PDF document
         pdf_canvas.save()
 
         buffer.seek(0)
-
         self.response = Response(buffer, mimetype='application/pdf')
         self.response.headers['Content-Disposition'] =\
             f'inline; filename={self.document.doc_type} {self.document.doc_id}.pdf'

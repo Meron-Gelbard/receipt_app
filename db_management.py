@@ -1,7 +1,7 @@
 from datetime import datetime
 from sqlalchemy import text, exc
 from db_architecture import User, Address, Document, Recipient
-from main import app, db
+from main import app, db, client_details
 
 
 def build_database():
@@ -14,9 +14,10 @@ def drop_database():
         db.session.remove()
         db.drop_all()
 
+
 def update_user_profile(user_name, update_params):
     with app.app_context():
-        user = get_user(user_name)
+        user = get_user(user_name=user_name)
         address = get_address(user.id)
         if user:
             for attr, value in update_params['user_params'].items():
@@ -42,8 +43,13 @@ def register_new_user(**kwargs):
             phone=kwargs['phone'],
             company_name=kwargs['company_name'],
             password=kwargs['password'],
+            website=kwargs['website'],
             doc_count=0,
-            create_date=datetime.now())
+            create_date=datetime.now(),
+            currency=client_details["currency"]["code"],
+            last_login=datetime.now()
+        )
+
         db.session.add(new_user)
 
         user_address = Address(
@@ -66,13 +72,19 @@ def register_new_user(**kwargs):
 
 def create_document(**kwargs):
     with app.app_context():
+        user = get_user(user_id=kwargs['user_id'])
+        doc_type_count = Document.query.filter_by(user_id=kwargs['user_id'], doc_type=kwargs['doc_type']).count()
         new_document = Document(
             user_id=kwargs['user_id'],
             doc_type=kwargs['doc_type'],
             doc_date=datetime.now(),
             subject=kwargs['subject'],
             payment_amount=kwargs['payment_amount'],
-            payment_type=kwargs['payment_type'])
+            payment_type=kwargs['payment_type'],
+            payment_currency=user.currency,
+            doc_serial_num=
+            f"{kwargs['user_id']}_{kwargs['doc_type'].lower()}_{doc_type_count+1}_{datetime.now().strftime('%d%m%Y')}"
+        )
         db.session.add(new_document)
 
         newdoc_recipient = Recipient(
@@ -90,8 +102,11 @@ def create_document(**kwargs):
         return new_document.doc_id
 
 
-def get_user(user_name):
-    return User.query.filter_by(user_name=user_name).first()
+def get_user(**kwargs):
+    try:
+        return User.query.filter_by(id=kwargs['user_id']).first()
+    except KeyError:
+        return User.query.filter_by(user_name=kwargs['user_name']).first()
 
 
 def get_address(user_id):
