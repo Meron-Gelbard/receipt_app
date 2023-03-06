@@ -33,6 +33,18 @@ def update_user_profile(user_name, update_params):
         # return {'error': 'user error', 'details': 'user not found'}
 
 
+def update_customer_profile(customer_name, update_params):
+    with app.app_context():
+        recipient = get_customer(name=customer_name)
+        if recipient:
+            for attr, value in update_params.items():
+                setattr(recipient, attr, value)
+            try:
+                db.session.commit()
+                return True
+            except exc.SQLAlchemyError as error:
+                return {'error': 'Database Error', 'details': (str(error.__dict__['orig']))}
+
 def register_new_user(**kwargs):
     with app.app_context():
         new_user = User(
@@ -83,7 +95,7 @@ def create_document(**kwargs):
             payment_type=kwargs['payment_type'],
             payment_currency=user.currency,
             doc_serial_num=
-            f"{kwargs['user_id']}_{kwargs['doc_type'].lower()}_{doc_type_count+1}_{datetime.now().strftime('%d%m%Y')}"
+            f"{user.user_name}_{kwargs['doc_type'].lower().replace(' ', '')}_{doc_type_count+1}_{datetime.now().strftime('%d%m%Y')}"
         )
         db.session.add(new_document)
 
@@ -107,6 +119,10 @@ def get_user(**kwargs):
         return User.query.filter_by(id=kwargs['user_id']).first()
     except KeyError:
         return User.query.filter_by(user_name=kwargs['user_name']).first()
+
+
+def get_customer(name):
+    return Recipient.query.filter_by(name=name).first()
 
 
 def get_address(user_id):

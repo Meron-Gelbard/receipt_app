@@ -20,7 +20,7 @@
   margin-bottom: 1%;
   align: center;
   display: inline-block;
-  width: 70%;
+  width: 60%;
   padding: 0.75rem 0.75rem;
   font-size: 1rem;
   font-weight: 400;
@@ -11746,8 +11746,22 @@ body {
 }
 
 .doc_pdf_btn {
+    font-size: 27px;
+    color: Gray;
     border: none;
     background-color: transparent;
     color: inherit;
     outline: none;
+}
+
+.copy_doc_url {
+  text-decoration: none;
+  color: Gray;
+  font-size: 12px;
+}
+
+.copy_doc_url:hover {
+  color: black;
+  text-decoration: none;
+  font-size: 11px;
 }

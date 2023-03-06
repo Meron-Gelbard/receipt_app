@@ -4,7 +4,6 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from datetime import datetime
 from db_architecture import Address
-from main import client_details
 
 
 class DocPdf:
@@ -86,5 +85,3 @@ class DocPdf:
         self.response = Response(buffer, mimetype='application/pdf')
         self.response.headers['Content-Disposition'] =\
             f'inline; filename={self.document.doc_type} {self.document.doc_id}.pdf'
-
-

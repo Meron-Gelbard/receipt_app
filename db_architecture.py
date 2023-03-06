@@ -60,7 +60,7 @@ class Address(db.Model, Base):
 class Document(db.Model, Base):
     __tablename__ = "documents"
     doc_id = Column(Integer, primary_key=True)
-    doc_serial_num = Column(String(30), nullable=False)
+    doc_serial_num = Column(String(200), nullable=False)
     doc_type = Column(String(30), nullable=False)
     doc_date = Column(Date, nullable=False)
     subject = Column(String(300), nullable=False)
@@ -76,7 +76,14 @@ class Recipient(db.Model, Base):
     __tablename__ = "recipients"
     recipient_id = Column(Integer, primary_key=True)
     name = Column(String(300), nullable=False)
-    phone = Column(String(30), nullable=False)
-    address = Column(String(300), nullable=False)
+    phone = Column(String(30), nullable=True)
+    address = Column(String(300), nullable=True)
     email = Column(String(250), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id', ondelete="CASCADE"))
+
+    def get_attrs(self):
+        recipient_attrs = {}
+        for key, value in vars(self).items():
+            if key not in ['_sa_instance_state', 'recipient_id', 'user_id']:
+                recipient_attrs[key] = value
+        return recipient_attrs

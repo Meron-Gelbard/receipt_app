@@ -1,5 +1,6 @@
+from flask_login import current_user
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, ValidationError, SelectField, IntegerField
+from wtforms import StringField, SubmitField, PasswordField, ValidationError, SelectField, IntegerField, BooleanField
 from wtforms.validators import InputRequired, Email, EqualTo
 import re
 import pycountry
@@ -21,16 +22,30 @@ class CurrencySelectField(SelectField):
         self.choices = [f'{value["currency"]} - {code} / {value["symbol"]}' for code, value in currencies.items()]
 
 
+class RecipientSelectField(SelectField):
+    def __init__(self, *args, **kwargs):
+        super(RecipientSelectField, self).__init__(*args, **kwargs)
+        self.choices = []
+        self.populate()
+
+    def populate(self):
+        user = current_user
+        for customer in user.recipients:
+            self.choices.append(customer.name)
+
+
 class DocTypeSelectField(SelectField):
     def __init__(self, *args, **kwargs):
         super(DocTypeSelectField, self).__init__(*args, **kwargs)
         self.choices = ['Receipt', 'Job Order', 'Receipt Cancellation', 'Invoice', 'Quotation']
+        self.default = None
 
 
 class PaymentTypeSelectField(SelectField):
     def __init__(self, *args, **kwargs):
         super(PaymentTypeSelectField, self).__init__(*args, **kwargs)
         self.choices = ['Cash', 'Bank Transfer', 'Credit Card', 'Payment App', 'Bank Cheque', 'Crypto Currency']
+        self.default = None
 
 
 class CountrySelectField(SelectField):
@@ -83,17 +98,51 @@ class UpdateUserForm(FlaskForm):
     submit = SubmitField("Save Edits")
 
 
+class UpdateRecipientForm(FlaskForm):
+    name = StringField("Customer Name", validators=[InputRequired()])
+    email = StringField("E-mail Address", validators=[InputRequired(),
+                                                      Email('* Invalid Email')])
+    phone = StringField("Phone Number", validators=[InputRequired()])
+    address = StringField("Full Address", validators=[InputRequired()])
+    submit = SubmitField("Save Edits")
+
+
 class NewDocumentForm(FlaskForm):
     doc_type = DocTypeSelectField('Document Type', validators=[InputRequired()])
     subject = StringField("Subject", validators=[InputRequired()])
-    recipient_name = StringField("Recipient Name")
+    past_c_switch = BooleanField("Choose from listed customers.")
+    past_customer = RecipientSelectField("Listed Customers:", validators=[InputRequired()])
+    recipient_name = StringField("Customer Name", validators=[InputRequired()])
     recipient_phone = StringField("Recipient Phone Number")
     recipient_address = StringField("Recipient Address")
     recipient_email = StringField("Recipient E-Mail Address",
                                   validators=[InputRequired(), Email('* Invalid Email')])
     payment_amount = IntegerField("Payment Amount", validators=[InputRequired()])
     payment_type = PaymentTypeSelectField('Payment Type', validators=[InputRequired()])
+
     submit = SubmitField("Create Document")
+
+    recipient_fields = [recipient_name, recipient_phone, recipient_address, recipient_email]
+
+    def validate(self, extra_validators=None):
+        if not FlaskForm.validate(self):
+            return False
+
+        if not self.past_c_switch.data:
+            if not self.recipient_name.data:
+                self.recipient_name.errors.append('* Required')
+                self.errors['past_c_switch'] = ('* Select',)
+                return False
+            else:
+                self.recipient_name.data = None
+        else:
+            if self.past_customer.data:
+                self.past_customer.errors.append('* Required')
+                self.errors['past_customer'] = ('* Select customer from list',)
+                return False
+            else:
+                self.recipient_name.data = ''
+        return True
 
 
 class LoginForm(FlaskForm):

@@ -9,7 +9,7 @@
     </div>
     {% if new_doc %}
 		<script>
-			var url = "{{ url_for('view_doc_pdf', user_name=user.user_name) }}";
+			var url = "{{ url_for('view_doc_pdf', user_name=user.user_name, doc_serial=new_doc) }}";
 			window.open(url, "_blank");
 		</script>
 	{% endif %}
@@ -92,10 +92,12 @@
                                 <td>{{ doc.payment_type }}</td>
                                 <td>{{ doc.recipient.name }}</td>
                                 <td>
-                                    <form method="post" action="{{ url_for('view_doc_pdf', user_name=user.user_name) }}" onsubmit="this.target='_blank';">
-                                      <input type="hidden" name="doc_id" value="{{ doc.doc_id }}">
-                                      <button type="submit" class="doc_pdf_btn"><i class="fa-regular fa-file-pdf fa-2x"></i></button>
-                                    </form></td>
+                                   <a class="doc_pdf_btn" href="{{ url_for('view_doc_pdf', user_name=user.user_name, doc_serial=doc.doc_serial_num) }}" onclick="this.target='_blank';">
+                                       <button type="submit" class="doc_pdf_btn"><i class="fa-regular fa-file-pdf fa-2x doc_pdf_btn"></i></button></a>
+                                       <button class="doc_pdf_btn">
+                                       <a class="copy_doc_url" href="{{ url_for('copy_doc_url', serial=doc.doc_serial_num, user=user.user_name) }}">
+                                           <span>Copy URL</span></a></button>
+                                </td>
                             </tr>
                             {% endfor %}
                             </tbody>

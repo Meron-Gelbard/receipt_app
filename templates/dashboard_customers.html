@@ -57,6 +57,7 @@
                                 <th>E-Mail</th>
                                 <th>Phone</th>
                                 <th>Address</th>
+                                <th>Customer Profile</th>
                             </tr>
                             </thead>
                             <tfoot>
@@ -65,6 +66,7 @@
                                 <th>E-Mail</th>
                                 <th>Phone</th>
                                 <th>Address</th>
+                                <th>Customer Profile</th>
                             </tr>
                             </tfoot>
                             <tbody>
@@ -74,6 +76,9 @@
                                 <td>{{ customer.email }}</td>
                                 <td>{{ customer.phone }}</td>
                                 <td>{{ customer.address }}</td>
+                                <td><button class="doc_pdf_btn">
+                                   <a class="copy_doc_url" href="{{ url_for('customer_profile', customer=customer.name, user_name=user.user_name) }}">
+                                       <span>Customer Profile</span></a></button></td>
                             </tr>
                             {% endfor %}
                             </tbody>

@@ -1,22 +1,38 @@
 from urllib.parse import urlparse, urljoin
 from flask import render_template, redirect, request, abort, session, url_for
-from db_management import get_user, register_new_user, create_document, \
-    update_user_profile, User, get_user_attrs, Document
+from db_architecture import Document, User
+from db_management import get_user, get_customer, register_new_user, create_document, \
+    update_user_profile, get_user_attrs, update_customer_profile
 from forms import *
 from main import app, db, message_manager
-from pdf_creator import DocPdf
+from pdf_document import DocPdf
 from flask_login import login_user, LoginManager, login_required, current_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
+import pyperclip
+from sqlalchemy import func
+
 
 # start flask-login
 login_manager = LoginManager()
 login_manager.init_app(app)
 
 
+
 @login_manager.user_loader
 def load_user(_id):
     return User.query.filter_by(id=int(_id)).first()
+
+
+@app.route('/copy_doc_url')
+@login_required
+def copy_doc_url():
+    serial = request.args['serial']
+    user_name = request.args['user']
+    host = request.url_root
+    doc_local_url = f'{host}{user_name}/doc_preview/{serial}'
+    pyperclip.copy(doc_local_url)
+    return redirect(request.referrer)
 
 
 def logged_check():
@@ -88,11 +104,12 @@ def login():
 @login_required
 def user_documents(user_name):
     new_doc = session.get('new_doc')
+    session['new_doc'] = None
     user = get_user(user_name=user_name)
     user.doc_count = Document.query.filter_by(user_id=user.id).count()
     db.session.commit()
     message_manager.clear()
-    return render_template('dashboard_docs.html', user=user, new_doc=new_doc)
+    return render_template('dashboard_docs.html', user=user, new_doc=new_doc, doc_url=copy_doc_url)
 
 
 @app.route('/<user_name>/dashboard/customers')
@@ -183,6 +200,39 @@ def user_profile(user_name):
                            currency=user.currency)
 
 
+@app.route('/<user_name>/customers/<customer>', methods=["POST", "GET"])
+@login_required
+def customer_profile(user_name, customer):
+    edit = request.args.get('edit')
+    user = get_user(user_name=user_name)
+    form = UpdateRecipientForm()
+    recipient = get_customer(customer)
+    recipient_attrs = recipient.get_attrs()
+    with app.app_context():
+        if edit:
+            if form.validate_on_submit():
+                update_params = {'name': form.name.data,
+                                 'email': form.email.data,
+                                 'phone': form.phone.data,
+                                 'address': form.address.data}
+
+                updated_response = update_customer_profile(customer, update_params)
+
+                if updated_response:
+                    customer = get_customer(update_params['name'])
+                    return redirect(f'/{user.user_name}/{customer.name}')
+                elif updated_response['error'] == 'Database Error':
+                    print(updated_response['error'])
+                    return render_template("customer_profile.html", form=form, user=user, edit=True,
+                                           recipient_attrs=recipient_attrs, recipient=recipient)
+            else:
+                message_manager.form_validation_error(form.errors.items())
+                return render_template("customer_profile.html", form=form, user=user, edit=True,
+                                       recipient_attrs=recipient_attrs, recipient=recipient)
+    return render_template("customer_profile.html", form=form, user=user, recipient=recipient,
+                           recipient_attrs=recipient_attrs)
+
+
 @app.route('/<user_name>/dashboard/create_document', methods=["POST", "GET"])
 @login_required
 def new_document(user_name):
@@ -190,7 +240,7 @@ def new_document(user_name):
     form = NewDocumentForm()
     user = get_user(user_name=user_name)
     if form.validate_on_submit():
-        create_document(
+        new_doc_id = create_document(
             user_id=user.id,
             doc_type=form.doc_type.data,
             subject=form.subject.data,
@@ -202,24 +252,17 @@ def new_document(user_name):
             recipient_email=form.recipient_email.data)
 
         db.session.commit()
-        session['new_doc'] = True
+        session['new_doc'] = Document.query.filter_by(doc_id=new_doc_id).first().doc_serial_num
         return redirect(url_for('user_documents', user_name=user_name))
     message_manager.form_validation_error(form.errors.items())
     return render_template("dashboard_create.html", form=form, user=user, logged_in=logged_check())
 
 
-@app.route('/<user_name>/document_preview', methods=["POST", "GET"])
-@login_required
-def view_doc_pdf(user_name):
+@app.route('/<user_name>/doc_preview/<doc_serial>', methods=["POST", "GET"])
+def view_doc_pdf(user_name, **kwargs):
     user = get_user(user_name=user_name)
-    if session['new_doc']:
-        new_doc = Document.query.order_by(Document.doc_id.desc()).first()
-        doc_pdf = DocPdf(user=user, document=new_doc)
-        session['new_doc'] = False
-    else:
-        doc_id = request.form['doc_id']
-        doc = Document.query.filter_by(doc_id=doc_id).first()
-        doc_pdf = DocPdf(user=user, document=doc)
+    doc = Document.query.filter_by(doc_serial_num=kwargs['doc_serial']).first()
+    doc_pdf = DocPdf(user=user, document=doc)
     return doc_pdf.response
 
 

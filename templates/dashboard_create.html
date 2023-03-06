@@ -45,10 +45,10 @@
             </div>
             <div class="card">
                 <div class="card-body">
-                    <form action="{{ url_for('new_document', user_name=user.user_name) }}" method="POST" novalidate>
+                    <form action="{{ url_for('new_document', user_name=user.user_name, ) }}" method="POST" novalidate>
                         {{ form.csrf_token }}
                         {% for field in form %}
-                        {% if field not in [form.csrf_token, form.submit] %}
+                        {% if field not in [form.csrf_token, form.submit, form.past_c_switch, form.past_customer] %}
                         {{ field.label }}<br>
                         <div class="form-floating mb-1">
                             {{ field(class="form-control-meron") }}<br>
@@ -66,13 +66,7 @@
                     <br>
                 </div>
             </div>
-            {% with messages = get_flashed_messages() %}
-            {% if messages %}
-            {% for message in messages %}
-            <h2 class=flash_msg>{{ message }}</h2>
-            {% endfor %}
-            {% endif %}
-            {% endwith %}
+
         </main>
     </div>
 </div>
