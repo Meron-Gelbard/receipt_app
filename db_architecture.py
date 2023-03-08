@@ -22,7 +22,7 @@ class User(UserMixin, db.Model, Base):
     address = relationship("Address", back_populates="user", cascade="all, delete", passive_deletes=True)
     address_id = Column(Integer, nullable=True)
     documents = relationship('Document', backref='user', cascade="all, delete", passive_deletes=True)
-    recipients = relationship('Recipient', backref='user', cascade="all, delete", passive_deletes=True)
+    customers = relationship('Customer', backref='user', cascade="all, delete", passive_deletes=True)
     doc_count = Column(Integer, nullable=False)
     currency = Column(String(5), nullable=True)
     website = Column(String(1000), nullable=True)
@@ -30,7 +30,7 @@ class User(UserMixin, db.Model, Base):
     def get_attrs(self):
         user_attrs = {}
         for key, value in vars(self).items():
-            if key not in ['id', 'password', 'address_id', 'documents', 'recipients', 'doc_count', 'create_date',
+            if key not in ['id', 'password', 'address_id', 'documents', 'customers', 'doc_count', 'create_date',
                            'get_user_attrs', 'get_id', '_sa_instance_state', 'user_name', 'last_login', 'currency']:
                 user_attrs[key] = value
         return user_attrs
@@ -66,14 +66,14 @@ class Document(db.Model, Base):
     payment_amount = Column(Integer, nullable=False)
     payment_currency = Column(String(5), nullable=False)
     payment_type = Column(String(30), nullable=False)
-    recipient_id = Column(Integer, ForeignKey('recipients.recipient_id'))
+    customer_id = Column(Integer, ForeignKey('customers.customer_id'))
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    recipient = relationship('Recipient', backref='recipient')
+    customer = relationship('Customer', backref='customer')
 
 
-class Recipient(db.Model, Base):
-    __tablename__ = "recipients"
-    recipient_id = Column(Integer, primary_key=True)
+class Customer(db.Model, Base):
+    __tablename__ = "customers"
+    customer_id = Column(Integer, primary_key=True)
     name = Column(String(300), nullable=False)
     phone = Column(String(30), nullable=True)
     address = Column(String(300), nullable=True)
@@ -81,8 +81,8 @@ class Recipient(db.Model, Base):
     user_id = Column(Integer, ForeignKey('users.id', ondelete="CASCADE"))
 
     def get_attrs(self):
-        recipient_attrs = {}
+        customer_attrs = {}
         for key, value in vars(self).items():
-            if key not in ['_sa_instance_state', 'recipient_id', 'user_id']:
-                recipient_attrs[key] = value
-        return recipient_attrs
+            if key not in ['_sa_instance_state', 'customer_id', 'user_id']:
+                customer_attrs[key] = value
+        return customer_attrs

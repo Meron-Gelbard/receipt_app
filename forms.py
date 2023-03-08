@@ -22,15 +22,15 @@ class CurrencySelectField(SelectField):
         self.choices = [f'{value["currency"]} - {code} / {value["symbol"]}' for code, value in currencies.items()]
 
 
-class RecipientSelectField(SelectField):
+class CustomerSelectField(SelectField):
     def __init__(self, *args, **kwargs):
-        super(RecipientSelectField, self).__init__(*args, **kwargs)
+        super(CustomerSelectField, self).__init__(*args, **kwargs)
         self.choices = []
         self.populate()
 
     def populate(self):
         user = current_user
-        for customer in user.recipients:
+        for customer in user.customers:
             self.choices.append(customer.name)
 
 
@@ -98,7 +98,7 @@ class UpdateUserForm(FlaskForm):
     submit = SubmitField("Save Edits")
 
 
-class UpdateRecipientForm(FlaskForm):
+class UpdateCustomerForm(FlaskForm):
     name = StringField("Customer Name", validators=[InputRequired()])
     email = StringField("E-mail Address", validators=[InputRequired(),
                                                       Email('* Invalid Email')])
@@ -112,7 +112,7 @@ class NewDocumentForm:
     def create(cls, checkbox='false'):
         if checkbox == 'true':
             class NewDocForm(FlaskForm):
-                listed_customers = RecipientSelectField("Listed Customers:", validators=[InputRequired()])
+                listed_customers = CustomerSelectField("Listed Customers:", validators=[InputRequired()])
                 doc_type = DocTypeSelectField('Document Type', validators=[InputRequired()])
                 subject = StringField("Subject", validators=[InputRequired()])
                 payment_amount = IntegerField("Payment Amount", validators=[InputRequired()])
@@ -132,17 +132,17 @@ class NewDocumentForm:
                 subject = StringField("Subject", validators=[InputRequired()])
                 payment_amount = IntegerField("Payment Amount", validators=[InputRequired()])
                 payment_type = PaymentTypeSelectField('Payment Type', validators=[InputRequired()])
-                recipient_name = StringField("Customer Name", validators=[InputRequired()])
-                recipient_phone = StringField("Recipient Phone Number")
-                recipient_address = StringField("Recipient Address")
-                recipient_email = StringField("Recipient E-Mail Address",
+                customer_name = StringField("Customer Name", validators=[InputRequired()])
+                customer_phone = StringField("Customer Phone Number")
+                customer_address = StringField("Customer Address")
+                customer_email = StringField("Customer E-Mail Address",
                                               validators=[InputRequired(), Email('* Invalid Email')])
                 submit = SubmitField("Create Document")
 
                 def __init__(self):
                     super(NewDocForm1, self).__init__()
-                    self.fields = ['doc_type', 'subject', 'recipient_name', 'recipient_phone', 'recipient_address',
-                                   'recipient_email', 'payment_amount', 'payment_type']
+                    self.fields = ['doc_type', 'subject', 'customer_name', 'customer_phone', 'customer_address',
+                                   'customer_email', 'payment_amount', 'payment_type']
 
             return NewDocForm1()
 

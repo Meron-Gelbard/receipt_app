@@ -204,9 +204,9 @@ def user_profile(user_name):
 def customer_profile(user_name, customer):
     edit = request.args.get('edit')
     user = get_user(user_name=user_name)
-    form = UpdateRecipientForm()
-    recipient = get_customer(customer)
-    recipient_attrs = recipient.get_attrs()
+    form = UpdateCustomerForm()
+    customer = get_customer(customer)
+    customer_attrs = customer.get_attrs()
     with app.app_context():
         if edit:
             if form.validate_on_submit():
@@ -222,13 +222,13 @@ def customer_profile(user_name, customer):
                     return redirect(f'/{user.user_name}/{customer.name}')
                 elif updated_response['error'] == 'Database Error':
                     return render_template("customer_profile.html", form=form, user=user, edit=True,
-                                           recipient_attrs=recipient_attrs, recipient=recipient)
+                                           customer_attrs=customer_attrs, customer=customer)
             else:
                 message_manager.form_validation_error(form.errors.items())
                 return render_template("customer_profile.html", form=form, user=user, edit=True,
-                                       recipient_attrs=recipient_attrs, recipient=recipient)
-    return render_template("customer_profile.html", form=form, user=user, recipient=recipient,
-                           recipient_attrs=recipient_attrs)
+                                       customer_attrs=customer_attrs, customer=customer)
+    return render_template("customer_profile.html", form=form, user=user, customer=customer,
+                           customer_attrs=customer_attrs)
 
 
 @app.route('/<user_name>/dashboard/create_document', methods=["POST", "GET"])
@@ -254,10 +254,10 @@ def new_document(user_name):
                 subject=form.subject.data,
                 payment_amount=int(form.payment_amount.data),
                 payment_type=form.payment_type.data,
-                recipient_name=form.recipient_name.data,
-                recipient_phone=form.recipient_phone.data,
-                recipient_address=form.recipient_address.data,
-                recipient_email=form.recipient_email.data)
+                customer_name=form.customer_name.data,
+                customer_phone=form.customer_phone.data,
+                customer_address=form.customer_address.data,
+                customer_email=form.customer_email.data)
 
         session['new_doc'] = Document.query.filter_by(doc_id=new_doc_id).first().doc_serial_num
         return redirect(url_for('user_documents', user_name=user_name))

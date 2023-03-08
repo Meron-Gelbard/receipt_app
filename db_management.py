@@ -1,6 +1,6 @@
 from datetime import datetime
 from sqlalchemy import text, exc
-from db_architecture import User, Address, Document, Recipient
+from db_architecture import User, Address, Document, Customer
 from main import app, db, client_details
 
 
@@ -33,10 +33,10 @@ def update_user_profile(user_name, update_params):
 
 def update_customer_profile(customer_name, update_params):
     with app.app_context():
-        recipient = get_customer(name=customer_name)
-        if recipient:
+        customer = get_customer(name=customer_name)
+        if customer:
             for attr, value in update_params.items():
-                setattr(recipient, attr, value)
+                setattr(customer, attr, value)
             try:
                 db.session.commit()
                 return True
@@ -85,7 +85,7 @@ def create_document(**kwargs):
         user = get_user(user_id=kwargs['user_id'])
         doc_type_count = Document.query.filter_by(user_id=kwargs['user_id'], doc_type=kwargs['doc_type']).count()
         if 'listed_customer' in kwargs.keys():
-            customer_id = Recipient.query.filter_by(name=kwargs['listed_customer']).first().recipient_id
+            customer_id = Customer.query.filter_by(name=kwargs['listed_customer']).first().customer_id
             print(customer_id)
             new_document = Document(
                 user_id=kwargs['user_id'],
@@ -95,7 +95,7 @@ def create_document(**kwargs):
                 payment_amount=kwargs['payment_amount'],
                 payment_type=kwargs['payment_type'],
                 payment_currency=user.currency,
-                recipient_id=customer_id,
+                customer_id=customer_id,
                 doc_serial_num=
                 f"{user.user_name}_{kwargs['doc_type'].lower().replace(' ', '')}_{doc_type_count + 1}_{datetime.now().strftime('%d%m%Y')}"
             )
@@ -116,17 +116,17 @@ def create_document(**kwargs):
             )
             db.session.add(new_document)
 
-            newdoc_recipient = Recipient(
-                name=kwargs['recipient_name'],
-                phone=kwargs['recipient_phone'],
-                address=kwargs['recipient_address'],
-                email=kwargs['recipient_email'],
+            newdoc_customer = Customer(
+                name=kwargs['customer_name'],
+                phone=kwargs['customer_phone'],
+                address=kwargs['customer_address'],
+                email=kwargs['customer_email'],
                 user_id=kwargs['user_id'])
-            db.session.add(newdoc_recipient)
+            db.session.add(newdoc_customer)
             db.session.commit()
 
             db.session.execute(text(f"UPDATE documents "
-                                    f"SET recipient_id={newdoc_recipient.recipient_id} WHERE doc_id={new_document.doc_id}"))
+                                    f"SET customer_id={newdoc_customer.customer_id} WHERE doc_id={new_document.doc_id}"))
             db.session.commit()
         return new_document.doc_id
 
@@ -139,7 +139,7 @@ def get_user(**kwargs):
 
 
 def get_customer(name):
-    return Recipient.query.filter_by(name=name).first()
+    return Customer.query.filter_by(name=name).first()
 
 
 def get_address(user_id):

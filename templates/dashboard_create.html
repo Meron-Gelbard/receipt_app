@@ -52,10 +52,10 @@
                             {% for field in form.fields %}
                                 {{ form[field].label }}<br>
                                 <div class="form-floating mb-1">
-                                    {{ form[field](class="form-control-meron") }}<br>
+                                    {{ form[field](class="form-control-meron") }}
                                     {% if form[field].errors: %}
                                         {% for error in form[field].errors %}
-                                            <span>{{ error }}</span>
+                                            <span class="flash_msg">{{ error }}</span>
                                         {% endfor %}
                                     {% endif %}
                                 </div>
@@ -69,6 +69,15 @@
                                 {% endif %}
                             {% endfor %}
                         <br>
+                        <div class="form-check mb-3">
+                            {% with messages = get_flashed_messages() %}
+                                {% if messages %}
+                                    {% for message in messages %}
+                                        <span class="flash_msg"><b>{{ message }}</b></span>
+                                    {% endfor %}
+                                {% endif %}
+                            {% endwith %}
+                        </div>
                         {{ form.submit(class_="btn btn-primary") }}
                     </form>
                     <br>

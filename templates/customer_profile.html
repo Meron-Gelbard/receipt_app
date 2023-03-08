@@ -10,7 +10,7 @@
     <div id="layoutSidenav_content">
         <main>
             <div class="container-fluid px-4">
-                <h1 class="mt-4">{{ recipient.name }}</h1>
+                <h1 class="mt-4">{{ customer.name }}</h1>
                 <ol class="breadcrumb mb-4">
                     <li class="breadcrumb-item active">Customer Profile </li>
                 </ol>
@@ -18,16 +18,16 @@
                     <div class="card mb-4 profile_card">
                         <div class="card-body">
                             {% if not edit %}
-                                {% for attr, value in recipient_attrs.items(): %}
+                                {% for attr, value in customer_attrs.items(): %}
                                 <span class="h4 mt-1 d-sm-inline"> {{ form[attr].label }}:&nbsp&nbsp&nbsp </span>
                                 <span class="h5 mt-1 d-sm-inline profile-value"><i> {{ value }} </i></span>
                                 <br><br>
                                 {% endfor %}
-                            <a href="{{ url_for('customer_profile', user_name=user.user_name, edit=True, customer=recipient.name) }}" class="btn btn-primary">Edit</a>
+                            <a href="{{ url_for('customer_profile', user_name=user.user_name, edit=True, customer=customer.name) }}" class="btn btn-primary">Edit</a>
                             {% elif edit %}
-                            <form action="{{ url_for('customer_profile', user_name=user.user_name, edit=True, customer=recipient.name) }}" method="POST" novalidate>
+                            <form action="{{ url_for('customer_profile', user_name=user.user_name, edit=True, customer=customer.name) }}" method="POST" novalidate>
                                 {{ form.csrf_token }}
-                                {% for attr, value in recipient_attrs.items(): %}
+                                {% for attr, value in customer_attrs.items(): %}
                                     <span class="h4 mt-1 d-sm-inline"> {{ form[attr].label }}:&nbsp&nbsp&nbsp </span>
                                     <span>{{ form[attr](value=value, class="user_update_form") }}</span>
                                     {% if form[attr].errors: %}

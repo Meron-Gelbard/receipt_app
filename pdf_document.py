@@ -42,8 +42,8 @@ class DocPdf:
         list_date = pdf_canvas.beginText(68, A4[1] - 250)
         list_date.textLine(self.document.doc_date.strftime("%m/%d/%Y"))
     
-        doc_recipient = pdf_canvas.beginText(64, A4[1] - 285)
-        doc_recipient.textLine(self.document.recipient.name)
+        doc_customer = pdf_canvas.beginText(64, A4[1] - 285)
+        doc_customer.textLine(self.document.customer.name)
     
         doc_subject = pdf_canvas.beginText(90.5, A4[1] - 328)
         doc_subject.textLine(self.document.subject)
@@ -69,7 +69,7 @@ class DocPdf:
         pdf_canvas.drawText(sender_name)
         pdf_canvas.drawText(sender_company)
         pdf_canvas.drawText(issue_date)
-        pdf_canvas.drawText(doc_recipient)
+        pdf_canvas.drawText(doc_customer)
         pdf_canvas.drawText(doc_subject)
         pdf_canvas.drawText(payment_amount)
         pdf_canvas.drawText(payment_type)
