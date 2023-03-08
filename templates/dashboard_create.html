@@ -59,7 +59,7 @@
                                         {% endfor %}
                                     {% endif %}
                                 </div>
-                                {% if field == 'subject' %}
+                                {% if field == 'subject' and user.documents != [] %}
                                     {% if checkbox=='true': %}
                                         <input type="checkbox" id="checkbox" name="checkbox" checked>
                                     {% else: %}

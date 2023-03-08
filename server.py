@@ -83,6 +83,7 @@ def login():
                         return abort(400)
 
                     message_manager.clear()
+                    print(user_2_login.documents)
                     return redirect(f'/{user_2_login.user_name}/dashboard/documents')
         message_manager.form_validation_error(form.errors.items())
         return render_template("login_new.html", form=form)
@@ -215,11 +216,12 @@ def customer_profile(user_name, customer):
                                  'phone': form.phone.data,
                                  'address': form.address.data}
 
-                updated_response = update_customer_profile(customer, update_params)
+                updated_response = update_customer_profile(customer.name, update_params)
 
                 if updated_response:
                     customer = get_customer(update_params['name'])
-                    return redirect(f'/{user.user_name}/{customer.name}')
+                    return redirect(f'/{user.user_name}/customers/{customer.name}')
+
                 elif updated_response['error'] == 'Database Error':
                     return render_template("customer_profile.html", form=form, user=user, edit=True,
                                            customer_attrs=customer_attrs, customer=customer)
