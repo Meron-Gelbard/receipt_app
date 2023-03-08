@@ -1,5 +1,5 @@
 from urllib.parse import urlparse, urljoin
-from flask import render_template, redirect, request, abort, session, url_for
+from flask import render_template, redirect, request, abort, session, url_for, Response
 from db_architecture import Document, User
 from db_management import get_user, get_customer, register_new_user, create_document, \
     update_user_profile, get_user_attrs, update_customer_profile
@@ -108,7 +108,7 @@ def copy_doc_url():
     host = request.url_root
     doc_local_url = f'{host}{user_name}/doc_preview/{serial}'
     pyperclip.copy(doc_local_url)
-    return redirect(request.referrer)
+    return Response(status=204)
 
 
 @app.route('/<user_name>/dashboard/customers')
@@ -235,35 +235,34 @@ def customer_profile(user_name, customer):
 @login_required
 def new_document(user_name):
     message_manager.clear()
-    form = NewDocumentForm()
-    if request.args.get('checkbox') == 'true':
-        form_fields = form.listed_customer_form
-        checkbox = 'true'
-    elif request.args.get('checkbox') == 'false':
-        form_fields = form.new_customer_form
-        checkbox = None
-    else:
-        form_fields = form.new_customer_form
-        checkbox = None
-
+    checkbox = request.args.get('checkbox')
+    form = NewDocumentForm.create(checkbox=checkbox)
     user = get_user(user_name=user_name)
     if form.validate_on_submit():
-        new_doc_id = create_document(
-            user_id=user.id,
-            doc_type=form.doc_type.data,
-            subject=form.subject.data,
-            payment_amount=int(form.payment_amount.data),
-            payment_type=form.payment_type.data,
-            recipient_name=form.recipient_name.data,
-            recipient_phone=form.recipient_phone.data,
-            recipient_address=form.recipient_address.data,
-            recipient_email=form.recipient_email.data)
+        if checkbox == 'true':
+            new_doc_id = create_document(
+                user_id=user.id,
+                doc_type=form.doc_type.data,
+                subject=form.subject.data,
+                payment_amount=int(form.payment_amount.data),
+                payment_type=form.payment_type.data,
+                listed_customer=form.listed_customers.data)
+        else:
+            new_doc_id = create_document(
+                user_id=user.id,
+                doc_type=form.doc_type.data,
+                subject=form.subject.data,
+                payment_amount=int(form.payment_amount.data),
+                payment_type=form.payment_type.data,
+                recipient_name=form.recipient_name.data,
+                recipient_phone=form.recipient_phone.data,
+                recipient_address=form.recipient_address.data,
+                recipient_email=form.recipient_email.data)
 
-        db.session.commit()
         session['new_doc'] = Document.query.filter_by(doc_id=new_doc_id).first().doc_serial_num
         return redirect(url_for('user_documents', user_name=user_name))
     message_manager.form_validation_error(form.errors.items())
-    return render_template("dashboard_create.html", form=form, form_fields=form_fields, user=user, checkbox=checkbox)
+    return render_template("dashboard_create.html", form=form, user=user, checkbox=checkbox)
 
 
 @app.route('/<user_name>/doc_preview/<doc_serial>', methods=["POST", "GET"])

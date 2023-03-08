@@ -84,31 +84,50 @@ def create_document(**kwargs):
     with app.app_context():
         user = get_user(user_id=kwargs['user_id'])
         doc_type_count = Document.query.filter_by(user_id=kwargs['user_id'], doc_type=kwargs['doc_type']).count()
-        new_document = Document(
-            user_id=kwargs['user_id'],
-            doc_type=kwargs['doc_type'],
-            doc_date=datetime.now(),
-            subject=kwargs['subject'],
-            payment_amount=kwargs['payment_amount'],
-            payment_type=kwargs['payment_type'],
-            payment_currency=user.currency,
-            doc_serial_num=
-            f"{user.user_name}_{kwargs['doc_type'].lower().replace(' ', '')}_{doc_type_count+1}_{datetime.now().strftime('%d%m%Y')}"
-        )
-        db.session.add(new_document)
+        if 'listed_customer' in kwargs.keys():
+            customer_id = Recipient.query.filter_by(name=kwargs['listed_customer']).first().recipient_id
+            print(customer_id)
+            new_document = Document(
+                user_id=kwargs['user_id'],
+                doc_type=kwargs['doc_type'],
+                doc_date=datetime.now(),
+                subject=kwargs['subject'],
+                payment_amount=kwargs['payment_amount'],
+                payment_type=kwargs['payment_type'],
+                payment_currency=user.currency,
+                recipient_id=customer_id,
+                doc_serial_num=
+                f"{user.user_name}_{kwargs['doc_type'].lower().replace(' ', '')}_{doc_type_count + 1}_{datetime.now().strftime('%d%m%Y')}"
+            )
+            db.session.add(new_document)
+            db.session.commit()
 
-        newdoc_recipient = Recipient(
-            name=kwargs['recipient_name'],
-            phone=kwargs['recipient_phone'],
-            address=kwargs['recipient_address'],
-            email=kwargs['recipient_email'],
-            user_id=kwargs['user_id'])
-        db.session.add(newdoc_recipient)
-        db.session.commit()
+        else:
+            new_document = Document(
+                user_id=kwargs['user_id'],
+                doc_type=kwargs['doc_type'],
+                doc_date=datetime.now(),
+                subject=kwargs['subject'],
+                payment_amount=kwargs['payment_amount'],
+                payment_type=kwargs['payment_type'],
+                payment_currency=user.currency,
+                doc_serial_num=
+                f"{user.user_name}_{kwargs['doc_type'].lower().replace(' ', '')}_{doc_type_count+1}_{datetime.now().strftime('%d%m%Y')}"
+            )
+            db.session.add(new_document)
 
-        db.session.execute(text(f"UPDATE documents "
-                                f"SET recipient_id={newdoc_recipient.recipient_id} WHERE doc_id={new_document.doc_id}"))
-        db.session.commit()
+            newdoc_recipient = Recipient(
+                name=kwargs['recipient_name'],
+                phone=kwargs['recipient_phone'],
+                address=kwargs['recipient_address'],
+                email=kwargs['recipient_email'],
+                user_id=kwargs['user_id'])
+            db.session.add(newdoc_recipient)
+            db.session.commit()
+
+            db.session.execute(text(f"UPDATE documents "
+                                    f"SET recipient_id={newdoc_recipient.recipient_id} WHERE doc_id={new_document.doc_id}"))
+            db.session.commit()
         return new_document.doc_id
 
 

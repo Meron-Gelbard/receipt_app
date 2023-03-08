@@ -46,10 +46,10 @@
             </div>
             <div class="card">
                 <div class="card-body">
-                    <form action="{{ url_for('new_document', user_name=user.user_name, ) }}" method="POST" novalidate>
+                    <form action="{{ url_for('new_document', user_name=user.user_name, checkbox=checkbox) }}" method="POST" novalidate>
 
                             {{ form.csrf_token }}
-                            {% for field in form_fields %}
+                            {% for field in form.fields %}
                                 {{ form[field].label }}<br>
                                 <div class="form-floating mb-1">
                                     {{ form[field](class="form-control-meron") }}<br>
@@ -60,9 +60,9 @@
                                     {% endif %}
                                 </div>
                                 {% if field == 'subject' %}
-                                    {% if checkbox %}
+                                    {% if checkbox=='true': %}
                                         <input type="checkbox" id="checkbox" name="checkbox" checked>
-                                    {% elif not checkbox %}
+                                    {% else: %}
                                         <input type="checkbox" id="checkbox" name="checkbox">
                                     {% endif %}
                                     <label for="checkbox">Choose from listed customers</label><br><br>

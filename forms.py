@@ -107,27 +107,44 @@ class UpdateRecipientForm(FlaskForm):
     submit = SubmitField("Save Edits")
 
 
-class NewDocumentForm(FlaskForm):
+class NewDocumentForm:
+    @classmethod
+    def create(cls, checkbox='false'):
+        if checkbox == 'true':
+            class NewDocForm(FlaskForm):
+                listed_customers = RecipientSelectField("Listed Customers:", validators=[InputRequired()])
+                doc_type = DocTypeSelectField('Document Type', validators=[InputRequired()])
+                subject = StringField("Subject", validators=[InputRequired()])
+                payment_amount = IntegerField("Payment Amount", validators=[InputRequired()])
+                payment_type = PaymentTypeSelectField('Payment Type', validators=[InputRequired()])
+                submit = SubmitField("Create Document")
 
-    doc_type = DocTypeSelectField('Document Type', validators=[InputRequired()])
-    subject = StringField("Subject", validators=[InputRequired()])
-    listed_customers = RecipientSelectField("Listed Customers:", validators=[InputRequired()])
-    recipient_name = StringField("Customer Name", validators=[InputRequired()])
-    recipient_phone = StringField("Recipient Phone Number")
-    recipient_address = StringField("Recipient Address")
-    recipient_email = StringField("Recipient E-Mail Address",
-                                  validators=[InputRequired(), Email('* Invalid Email')])
-    payment_amount = IntegerField("Payment Amount", validators=[InputRequired()])
-    payment_type = PaymentTypeSelectField('Payment Type', validators=[InputRequired()])
+                def __init__(self):
+                    super(NewDocForm, self).__init__()
+                    self.fields = ['doc_type', 'subject', 'listed_customers', 'payment_amount', 'payment_type']
 
-    submit = SubmitField("Create Document")
+            return NewDocForm()
 
-    new_customer_form = ['doc_type', 'subject', 'recipient_name', 'recipient_phone', 'recipient_address',
-                         'payment_amount', 'payment_type', 'recipient_email']
+        elif checkbox == 'false' or checkbox is None:
 
-    listed_customer_form = ['doc_type', 'subject', 'listed_customers',
-                            'payment_amount', 'payment_type', 'recipient_email']
+            class NewDocForm1(FlaskForm):
+                doc_type = DocTypeSelectField('Document Type', validators=[InputRequired()])
+                subject = StringField("Subject", validators=[InputRequired()])
+                payment_amount = IntegerField("Payment Amount", validators=[InputRequired()])
+                payment_type = PaymentTypeSelectField('Payment Type', validators=[InputRequired()])
+                recipient_name = StringField("Customer Name", validators=[InputRequired()])
+                recipient_phone = StringField("Recipient Phone Number")
+                recipient_address = StringField("Recipient Address")
+                recipient_email = StringField("Recipient E-Mail Address",
+                                              validators=[InputRequired(), Email('* Invalid Email')])
+                submit = SubmitField("Create Document")
 
+                def __init__(self):
+                    super(NewDocForm1, self).__init__()
+                    self.fields = ['doc_type', 'subject', 'recipient_name', 'recipient_phone', 'recipient_address',
+                                   'recipient_email', 'payment_amount', 'payment_type']
+
+            return NewDocForm1()
 
 
 class LoginForm(FlaskForm):

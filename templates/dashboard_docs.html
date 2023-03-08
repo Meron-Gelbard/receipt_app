@@ -95,7 +95,7 @@
                                    <a class="doc_pdf_btn" href="{{ url_for('view_doc_pdf', user_name=user.user_name, doc_serial=doc.doc_serial_num) }}" onclick="this.target='_blank';">
                                        <button type="submit" class="doc_pdf_btn"><i class="fa-regular fa-file-pdf fa-2x doc_pdf_btn"></i></button></a>
                                        <button class="doc_pdf_btn">
-                                       <a class="copy_doc_url" href="{{ url_for('copy_doc_url', serial=doc.doc_serial_num, user=user.user_name) }}">
+                                       <a class="copy_doc_url" href="{{ url_for('copy_doc_url', serial=doc.doc_serial_num, user=user.user_name) }}" >
                                            <span>Copy URL</span></a></button>
                                 </td>
                             </tr>
