@@ -3,6 +3,7 @@
 {% block body %}
 <body class="sb-nav-fixed">
 {% include "navbar.html" %}
+
 <div id="layoutSidenav">
     <div id="layoutSidenav_nav">
         {% include "side_nav.html" %}
@@ -46,27 +47,33 @@
             <div class="card">
                 <div class="card-body">
                     <form action="{{ url_for('new_document', user_name=user.user_name, ) }}" method="POST" novalidate>
-                        {{ form.csrf_token }}
-                        {% for field in form %}
-                        {% if field not in [form.csrf_token, form.submit, form.past_c_switch, form.past_customer] %}
-                        {{ field.label }}<br>
-                        <div class="form-floating mb-1">
-                            {{ field(class="form-control-meron") }}<br>
-                            {% if field.errors: %}
-                            {% for error in field.errors %}
-                            <span>{{ error }}</span>
+
+                            {{ form.csrf_token }}
+                            {% for field in form_fields %}
+                                {{ form[field].label }}<br>
+                                <div class="form-floating mb-1">
+                                    {{ form[field](class="form-control-meron") }}<br>
+                                    {% if form[field].errors: %}
+                                        {% for error in form[field].errors %}
+                                            <span>{{ error }}</span>
+                                        {% endfor %}
+                                    {% endif %}
+                                </div>
+                                {% if field == 'subject' %}
+                                    {% if checkbox %}
+                                        <input type="checkbox" id="checkbox" name="checkbox" checked>
+                                    {% elif not checkbox %}
+                                        <input type="checkbox" id="checkbox" name="checkbox">
+                                    {% endif %}
+                                    <label for="checkbox">Choose from listed customers</label><br><br>
+                                {% endif %}
                             {% endfor %}
-                            {% endif %}
-                        </div>
-                        {% endif %}
-                        {% endfor %}
                         <br>
                         {{ form.submit(class_="btn btn-primary") }}
                     </form>
                     <br>
                 </div>
             </div>
-
         </main>
     </div>
 </div>
@@ -75,6 +82,15 @@
 <script src="../../static/js/scripts.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/simple-datatables@latest" crossorigin="anonymous"></script>
 <script src="../../static/js/datatables-simple-demo.js"></script>
+<script>
+  var checkbox = document.getElementById("checkbox");
+  checkbox.addEventListener("change", function() {
+    var isChecked = this.checked;
+    var url = "{{ url_for('new_document', user_name=user.user_name) }}";
+    url += "?checkbox=" + isChecked;
+    window.location.href = url;
+  });
+</script>
 </body>
 {% endblock %}
 

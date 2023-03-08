@@ -27,7 +27,6 @@ class User(UserMixin, db.Model, Base):
     currency = Column(String(5), nullable=True)
     website = Column(String(1000), nullable=True)
 
-
     def get_attrs(self):
         user_attrs = {}
         for key, value in vars(self).items():

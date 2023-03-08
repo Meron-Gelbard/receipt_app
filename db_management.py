@@ -30,8 +30,6 @@ def update_user_profile(user_name, update_params):
             except exc.SQLAlchemyError as error:
                 return {'error': 'Database Error', 'details': (str(error.__dict__['orig']))}
 
-        # return {'error': 'user error', 'details': 'user not found'}
-
 
 def update_customer_profile(customer_name, update_params):
     with app.app_context():
@@ -44,6 +42,7 @@ def update_customer_profile(customer_name, update_params):
                 return True
             except exc.SQLAlchemyError as error:
                 return {'error': 'Database Error', 'details': (str(error.__dict__['orig']))}
+
 
 def register_new_user(**kwargs):
     with app.app_context():
@@ -59,8 +58,7 @@ def register_new_user(**kwargs):
             doc_count=0,
             create_date=datetime.now(),
             currency=client_details["currency"]["code"],
-            last_login=datetime.now()
-        )
+            last_login=datetime.now())
 
         db.session.add(new_user)
 

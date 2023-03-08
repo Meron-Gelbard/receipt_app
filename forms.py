@@ -61,7 +61,6 @@ def password_validation(form, field):
         if re.search(r'[a-z]', field.data):
             if re.search(r'\d', field.data):
                 return
-    print('Password Error')
     raise ValidationError('* Invalid Password')
 
 
@@ -85,6 +84,7 @@ class RegisterUserForm(FlaskForm):
 
 
 class UpdateUserForm(FlaskForm):
+
     first_name = StringField("First Name", validators=[InputRequired()])
     last_name = StringField("Last Name", validators=[InputRequired()])
     email = StringField("E-mail Address", validators=[InputRequired(),
@@ -108,10 +108,10 @@ class UpdateRecipientForm(FlaskForm):
 
 
 class NewDocumentForm(FlaskForm):
+
     doc_type = DocTypeSelectField('Document Type', validators=[InputRequired()])
     subject = StringField("Subject", validators=[InputRequired()])
-    past_c_switch = BooleanField("Choose from listed customers.")
-    past_customer = RecipientSelectField("Listed Customers:", validators=[InputRequired()])
+    listed_customers = RecipientSelectField("Listed Customers:", validators=[InputRequired()])
     recipient_name = StringField("Customer Name", validators=[InputRequired()])
     recipient_phone = StringField("Recipient Phone Number")
     recipient_address = StringField("Recipient Address")
@@ -122,27 +122,12 @@ class NewDocumentForm(FlaskForm):
 
     submit = SubmitField("Create Document")
 
-    recipient_fields = [recipient_name, recipient_phone, recipient_address, recipient_email]
+    new_customer_form = ['doc_type', 'subject', 'recipient_name', 'recipient_phone', 'recipient_address',
+                         'payment_amount', 'payment_type', 'recipient_email']
 
-    def validate(self, extra_validators=None):
-        if not FlaskForm.validate(self):
-            return False
+    listed_customer_form = ['doc_type', 'subject', 'listed_customers',
+                            'payment_amount', 'payment_type', 'recipient_email']
 
-        if not self.past_c_switch.data:
-            if not self.recipient_name.data:
-                self.recipient_name.errors.append('* Required')
-                self.errors['past_c_switch'] = ('* Select',)
-                return False
-            else:
-                self.recipient_name.data = None
-        else:
-            if self.past_customer.data:
-                self.past_customer.errors.append('* Required')
-                self.errors['past_customer'] = ('* Select customer from list',)
-                return False
-            else:
-                self.recipient_name.data = ''
-        return True
 
 
 class LoginForm(FlaskForm):

@@ -18,23 +18,6 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 
 
-
-@login_manager.user_loader
-def load_user(_id):
-    return User.query.filter_by(id=int(_id)).first()
-
-
-@app.route('/copy_doc_url')
-@login_required
-def copy_doc_url():
-    serial = request.args['serial']
-    user_name = request.args['user']
-    host = request.url_root
-    doc_local_url = f'{host}{user_name}/doc_preview/{serial}'
-    pyperclip.copy(doc_local_url)
-    return redirect(request.referrer)
-
-
 def logged_check():
     with app.app_context():
         if current_user.is_authenticated:
@@ -47,6 +30,11 @@ def is_safe_url(target):
     ref_url = urlparse(request.host_url)
     test_url = urlparse(urljoin(request.host_url, target))
     return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
+
+
+@login_manager.user_loader
+def load_user(_id):
+    return User.query.filter_by(id=int(_id)).first()
 
 
 @app.route('/')
@@ -110,6 +98,17 @@ def user_documents(user_name):
     db.session.commit()
     message_manager.clear()
     return render_template('dashboard_docs.html', user=user, new_doc=new_doc, doc_url=copy_doc_url)
+
+
+@app.route('/copy_doc_url')
+@login_required
+def copy_doc_url():
+    serial = request.args['serial']
+    user_name = request.args['user']
+    host = request.url_root
+    doc_local_url = f'{host}{user_name}/doc_preview/{serial}'
+    pyperclip.copy(doc_local_url)
+    return redirect(request.referrer)
 
 
 @app.route('/<user_name>/dashboard/customers')
@@ -222,7 +221,6 @@ def customer_profile(user_name, customer):
                     customer = get_customer(update_params['name'])
                     return redirect(f'/{user.user_name}/{customer.name}')
                 elif updated_response['error'] == 'Database Error':
-                    print(updated_response['error'])
                     return render_template("customer_profile.html", form=form, user=user, edit=True,
                                            recipient_attrs=recipient_attrs, recipient=recipient)
             else:
@@ -238,6 +236,16 @@ def customer_profile(user_name, customer):
 def new_document(user_name):
     message_manager.clear()
     form = NewDocumentForm()
+    if request.args.get('checkbox') == 'true':
+        form_fields = form.listed_customer_form
+        checkbox = 'true'
+    elif request.args.get('checkbox') == 'false':
+        form_fields = form.new_customer_form
+        checkbox = None
+    else:
+        form_fields = form.new_customer_form
+        checkbox = None
+
     user = get_user(user_name=user_name)
     if form.validate_on_submit():
         new_doc_id = create_document(
@@ -255,7 +263,7 @@ def new_document(user_name):
         session['new_doc'] = Document.query.filter_by(doc_id=new_doc_id).first().doc_serial_num
         return redirect(url_for('user_documents', user_name=user_name))
     message_manager.form_validation_error(form.errors.items())
-    return render_template("dashboard_create.html", form=form, user=user, logged_in=logged_check())
+    return render_template("dashboard_create.html", form=form, form_fields=form_fields, user=user, checkbox=checkbox)
 
 
 @app.route('/<user_name>/doc_preview/<doc_serial>', methods=["POST", "GET"])
