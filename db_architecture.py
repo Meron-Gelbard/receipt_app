@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, String, Date, DateTime
+from sqlalchemy import Column, Integer, ForeignKey, String, Date, DateTime, Boolean
 from sqlalchemy.orm import relationship, Mapped, declarative_base
 from main import db
 from flask_login import UserMixin
@@ -14,6 +14,7 @@ class User(UserMixin, db.Model, Base):
     last_name = Column(String(50), nullable=False)
     user_name = Column(String(100), nullable=False, unique=True)
     email = Column(String(250), nullable=False, unique=True)
+    email_confirmed = Column(Boolean, nullable=True)
     phone = Column(String(20), nullable=True, unique=True)
     company_name = Column(String(250), nullable=False, unique=True)
     password = Column(String(250), nullable=False)
@@ -31,7 +32,8 @@ class User(UserMixin, db.Model, Base):
         user_attrs = {}
         for key, value in vars(self).items():
             if key not in ['id', 'password', 'address_id', 'documents', 'customers', 'doc_count', 'create_date',
-                           'get_user_attrs', 'get_id', '_sa_instance_state', 'user_name', 'last_login', 'currency']:
+                           'get_user_attrs', 'get_id', '_sa_instance_state', 'user_name', 'last_login', 'currency',
+                           'email_confirmed']:
                 user_attrs[key] = value
 
         return user_attrs

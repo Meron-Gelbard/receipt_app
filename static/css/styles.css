@@ -4561,6 +4561,8 @@ textarea.form-control-lg {
   border: 1px solid rgba(0, 0, 0, 0.125);
   border-radius: 0.25rem;
 }
+
+
 .card > hr {
   margin-right: 0;
   margin-left: 0;
@@ -11729,6 +11731,9 @@ body {
 
 .current_card {
     border-width: 4px;
+    border-radius:15px;
+    border-color: DodgerBlue;
+    background-color: CornflowerBlue;
 }
 
 .profile-value {
@@ -11737,6 +11742,10 @@ body {
 
 .profile_card {
     width: 60%;
+}
+
+.password_card {
+    width: 45%;
 }
 
 .user_update_form {
@@ -11768,4 +11777,15 @@ body {
 
 .smaller {
   font-size: 0.825em;
+}
+
+.green {
+  color: green;
+}
+
+.dash_card {
+}
+
+.dash_card:hover {
+    background-color: CornflowerBlue;
 }

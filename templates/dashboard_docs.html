@@ -32,14 +32,14 @@
                 <div class="row">
                     <!--                            colored labels -->
                     <div class="col-xl-3 col-md-6">
-                        <div class="card bg-primary text-white mb-4 current_card">
+                        <div class="card text-white mb-4 current_card">
                             <div class="card-body">Issued Documents&nbsp;&nbsp;&nbsp;<i class="fas fa-book"></i></div>
                         </div>
                     </div>
 
                     <div class="col-xl-3 col-md-6">
                         <a href="/{{ user.user_name }}/dashboard/customers">
-                            <div class="card bg-primary text-white mb-4">
+                            <div class="card bg-primary text-white mb-4 ">
                                 <div class="card-body">Customer Management&nbsp;&nbsp;&nbsp;<i class="fas fa-users"></i></div>
                             </div>
                         </a>
@@ -68,11 +68,10 @@
                         <table id="datatablesSimple">
                             <thead>
                             <tr>
-                                <th>I.D</th>
-                                <th>Type</th>
+                                <th>Title</th>
                                 <th>Date</th>
                                 <th>Subject</th>
-                                <th>Payment Amount</th>
+                                <th>Amount</th>
                                 <th>Payment Type</th>
                                 <th>Customer</th>
                                 <th>View PDF</th>
@@ -80,11 +79,10 @@
                             </thead>
                             <tfoot>
                             <tr>
-                                <th>I.D</th>
-                                <th>Type</th>
+                                <th>Title</th>
                                 <th>Date</th>
                                 <th>Subject</th>
-                                <th>Payment Amount</th>
+                                <th>Amount</th>
                                 <th>Payment Type</th>
                                 <th>Customer</th>
                                 <th>View PDF</th>
@@ -93,9 +91,8 @@
                             <tbody>
                             {% for doc in user.documents: %}
                             <tr>
-                                <td>{{ doc.doc_id }}</td>
-                                <td>{{ doc.doc_type }}</td>
-                                <td>{{ doc.doc_date }}</td>
+                                <td>{{ doc.doc_type }}&nbsp;-&nbsp;{{ doc.doc_serial_num.split("_")[2] }}</td>
+                                <td>{{ doc.doc_date.strftime("%d.%m.%y") }}</td>
                                 <td>{{ doc.subject }}</td>
                                 <td>{{ doc.payment_amount }}</td>
                                 <td>{{ doc.payment_type }}</td>

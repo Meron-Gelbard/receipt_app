@@ -1,5 +1,6 @@
 from urllib.parse import urlparse, urljoin
-from flask import render_template, redirect, request, abort, session, url_for, Response
+from flask import render_template, redirect, request, abort, session, url_for
+from email_manager import EmailManager
 from db_management import *
 from forms import *
 from main import app, db, message_manager
@@ -8,6 +9,7 @@ from flask_login import login_user, LoginManager, login_required, current_user, 
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import pyperclip
+import uuid
 
 
 # start flask-login
@@ -55,33 +57,40 @@ def logout():
 @app.route('/login', methods=["POST", "GET"])
 def login():
     session['new_doc'] = False
-    message_manager.clear()
     with app.app_context():
         form = LoginForm()
         if form.validate_on_submit():
             user_2_login = User.query.filter_by(email=form.email.data.lower()).first()
             if not user_2_login:
+                message_manager.clear()
                 message_manager.login_messages('user not found')
                 return render_template("login_new.html", form=form)
             elif user_2_login:
                 password_ok = check_password_hash(pwhash=user_2_login.password, password=form.password.data)
                 if not password_ok:
+                    message_manager.clear()
                     message_manager.login_messages('pass error')
                     return render_template("login_new.html", form=form)
                 elif password_ok:
-                    login_user(user_2_login, remember=False)
-                    session['user_last_log'] = user_2_login.last_login.strftime("%d/%m/%Y  |  %H:%M")
-                    user_2_login.last_login = datetime.now()
-                    db.session.commit()
+                    if user_2_login.email_confirmed:
+                        login_user(user_2_login, remember=False)
+                        session['user_last_log'] = user_2_login.last_login.strftime("%d.%m.%y | %H:%M")
+                        user_2_login.last_login = datetime.now()
+                        db.session.commit()
 
-                    # source url checker
-                    _next = request.args.get('next')
-                    if not is_safe_url(_next):
-                        return abort(400)
+                        # source url checker
+                        _next = request.args.get('next')
+                        if not is_safe_url(_next):
+                            return abort(400)
 
-                    message_manager.clear()
-                    message_manager.login_messages('login OK')
-                    return redirect(f'/{user_2_login.user_name}/dashboard/documents')
+                        message_manager.clear()
+                        message_manager.login_messages('login OK')
+                        return redirect(f'/{user_2_login.user_name}/dashboard/documents')
+                    else:
+                        message_manager.clear()
+                        message_manager.communicate(f'Please confirm E-mail address. '
+                                                    f'Confirmation link sent to {user_2_login.email}.')
+                        return render_template("login_new.html", form=form)
         message_manager.form_validation_error(form.errors.items())
         return render_template("login_new.html", form=form)
 
@@ -106,7 +115,7 @@ def copy_doc_url():
     host = request.url_root
     doc_local_url = f'{host}{user_name}/doc_preview/{serial}'
     pyperclip.copy(doc_local_url)
-    message_manager.communicate('doc url')
+    message_manager.communicate('Document URL copied.')
     return redirect(f'/{user_name}/dashboard/documents')
 
 
@@ -137,14 +146,37 @@ def register_user():
                 website=form.website.data)
             user_name = (form.first_name.data + form.last_name.data).lower()
             if isinstance(response, User):
-                user_2_login = User.query.filter_by(user_name=user_name).first()
-                login_user(user_2_login, remember=False)
-                session['user_last_log'] = datetime.now().strftime("%d/%m/%Y  |  %H:%M")
-                return redirect(f'/{user_name}/dashboard/documents')
+                session[f'uuid_{user_name}'] = uuid.uuid4()
+                print(session[f'uuid_{user_name}'])
+                new_user = User.query.filter_by(user_name=user_name).first()
+                EmailManager.send_email_confirm(name=f'{new_user.first_name} {new_user.last_name}', user_name=user_name,
+                                                email=new_user.email, uuid=session[f'uuid_{user_name}'])
+                # login_user(user_2_login, remember=False)
+                # session['user_last_log'] = datetime.now().strftime("%d/%m/%Y  |  %H:%M")
+                message_manager.clear()
+                message_manager.communicate(f'Email confirmation sent to {new_user.email}.')
+                return redirect(f'/login')
             elif response['error'] == 'Database Error':
                 message_manager.database_error(response['details'])
         message_manager.form_validation_error(form.errors.items())
         return render_template("register_new.html", form=form)
+
+
+@app.route('/email_confirm/<user_name>/<sent_uuid>')
+def email_confirm(user_name, sent_uuid):
+    with app.app_context():
+        if not session.get(f'uuid_{user_name}'):
+            return redirect('/login')
+        if sent_uuid == str(session[f'uuid_{user_name}']):
+            del session[f'uuid_{user_name}']
+            confirmed_user = get_user(user_name=user_name)
+            confirmed_user.email_confirmed = True
+            db.session.commit()
+            message_manager.clear()
+            message_manager.communicate('Email address confirmed!')
+            return redirect('/login')
+        else:
+            return abort(404)
 
 
 @app.route('/<user_name>/profile', methods=["POST", "GET"])
@@ -178,7 +210,7 @@ def user_profile(user_name):
                 if updated_response:
                     user = get_user(user_name=update_params['user_params']['user_name'])
                     message_manager.clear()
-                    message_manager.communicate('user update')
+                    message_manager.communicate('User profile updated.')
                     return redirect(f'/{user.user_name}/profile')
                 elif updated_response['error'] == 'Database Error':
                     message_manager.database_error(updated_response['details'])
@@ -210,7 +242,8 @@ def change_password(user_name):
         if form.validate_on_submit():
             current_pass_ok = check_password_hash(pwhash=user.password, password=form.current_pass.data)
             if current_pass_ok:
-                new_pass_hash = generate_password_hash(password=form.new_pass.data, method='pbkdf2:sha256', salt_length=8)
+                new_pass_hash = generate_password_hash(password=form.new_pass.data,
+                                                       method='pbkdf2:sha256', salt_length=8)
                 response = change_user_password(user_name, new_pass_hash)
                 if response == 'OK':
                     message_manager.login_messages('pass change')
@@ -248,7 +281,7 @@ def customer_profile(user_name, customer):
                 if updated_response:
                     customer = get_customer(update_params['name'])
                     message_manager.clear()
-                    message_manager.communicate('customer update')
+                    message_manager.communicate('Customer profile updated.')
                     return redirect(f'/{user.user_name}/customers/{customer.name}')
 
                 elif updated_response['error'] == 'Database Error':

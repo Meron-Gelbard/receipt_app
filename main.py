@@ -3,16 +3,21 @@ from flask import Flask, flash, session
 from flask_sqlalchemy import SQLAlchemy
 import requests
 
-# hash these later...
+
+# make environment variables later...
 SECRET = '1111'
 DB_HOST_NAME = 'localhost'
 DB_NAME = 'receipt_app1'
 DB_USERN = 'postgres'
 APP_KEY = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+SMTP_CONFIG = {'smtp_server': 'mail.merong.zeevm.co.il',
+               'smtp_port': 587,
+               'smtp_username': 'kabalar@merong.zeevm.co.il',
+               'smtp_password': 'blackroad1961'}
 
-# make environment variables later...
 SQLALCHEMY_DB_URI = f'postgresql+psycopg2://{DB_USERN}:{SECRET}@{DB_HOST_NAME}/{DB_NAME}'
 api_key = 'def31c8d33834a5aa3f352665bd954f5'
+
 try:
     client_details = requests.get(f'https://api.ipgeolocation.io/ipgeo?apiKey={api_key}').json()
 except Exception:
@@ -27,6 +32,8 @@ app.config['SECRET_KEY'] = {APP_KEY}
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DB_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app, session_options={"autoflush": False})
+
+
 
 
 class MessageManager:
@@ -92,13 +99,8 @@ class MessageManager:
                 break
         self.flash_messages()
 
-    def communicate(self, details):
-        if details == 'doc url':
-            self.messages.append('Document URL copied.')
-        if details == 'user update':
-            self.messages.append('User profile updated.')
-        if details == 'customer update':
-            self.messages.append('Customer profile updated.')
+    def communicate(self, message):
+        self.messages.append(message)
         self.flash_messages()
 
 

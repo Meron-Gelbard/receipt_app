@@ -12,19 +12,27 @@
                 {{ user.first_name }}'s Profile
             </a>
             <div class="sb-sidenav-menu-heading">Management</div>
-            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseDocuments"
-               aria-expanded="false" aria-controls="collapseDocuments">
+<!--            <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseDocuments"-->
+<!--               aria-expanded="false" aria-controls="collapseDocuments">-->
+<!--                <div class="sb-nav-link-icon"><i class="fas fa-book"></i></div>-->
+<!--                Documents-->
+<!--                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>-->
+<!--            </a>-->
+<!--            <div class="collapse" id="collapseDocuments" aria-labelledby="headingOne"-->
+<!--                 data-bs-parent="#sidenavAccordion">-->
+<!--                <nav class="sb-sidenav-menu-nested nav">-->
+<!--                    <a class="nav-link" href="/{{ user.user_name }}/dashboard/documents">Receipts / Invoices</a>-->
+<!--                    <a class="nav-link" href="/{{ user.user_name }}/dashboard/documents">Job Orders / Quotations</a>-->
+<!--                </nav>-->
+<!--            </div>-->
+            <a class="nav-link" href="/{{ user.user_name }}/dashboard/documents">
                 <div class="sb-nav-link-icon"><i class="fas fa-book"></i></div>
                 Documents
-                <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
             </a>
-            <div class="collapse" id="collapseDocuments" aria-labelledby="headingOne"
-                 data-bs-parent="#sidenavAccordion">
-                <nav class="sb-sidenav-menu-nested nav">
-                    <a class="nav-link" href="/{{ user.user_name }}/dashboard/documents">Receipts / Invoices</a>
-                    <a class="nav-link" href="/{{ user.user_name }}/dashboard/documents">Job Orders / Quotations</a>
-                </nav>
-            </div>
+            <a class="nav-link" href="/{{ user.user_name }}/dashboard/customers">
+                <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
+                Customers
+            </a>
             <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseCreate"
                aria-expanded="false" aria-controls="collapseCreate">
                 <div class="sb-nav-link-icon"><i class="fas fa-marker"></i></div>
@@ -39,10 +47,6 @@
             <a class="nav-link" href="{{ url_for('new_document', user_name=user.user_name, selection='Job Order') }}">Job Order</a>
             </nav>
             </div>
-            <a class="nav-link" href="/{{ user.user_name }}/dashboard/customers">
-                <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
-                Customers
-            </a>
             <div class="sb-sidenav-menu-heading">Statistics</div>
             <a class="nav-link" href="tables.html">
                 <div class="sb-nav-link-icon"><i class="fas fa-calculator"></i></div>

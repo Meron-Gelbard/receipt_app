@@ -67,20 +67,20 @@ def password_validation(form, field):
 # WTForms
 
 class RegisterUserForm(FlaskForm):
-    first_name = StringField("First Name", validators=[InputRequired()])
-    last_name = StringField("Last Name", validators=[InputRequired()])
+    first_name = StringField("First Name", validators=[InputRequired()], id='first_name')
+    last_name = StringField("Last Name", validators=[InputRequired()], id='last_name')
     email = StringField("E-mail Address", validators=[InputRequired(),
-                                                      Email('* Invalid Email')])
-    phone = StringField("Phone Number", validators=[InputRequired()])
-    company_name = StringField("Company Name", validators=[InputRequired()])
-    password = PasswordField('Create Password', validators=[InputRequired(), password_validation])
+                                                      Email('* Invalid Email')], id='email')
+    phone = StringField("Phone Number", validators=[InputRequired()], id='phone')
+    company_name = StringField("Company Name", validators=[InputRequired()], id='company_name')
+    password = PasswordField('Create Password', validators=[InputRequired(), password_validation], id='new_p')
     pass_repeat = PasswordField('Re-Enter Password', validators=[InputRequired(),
-                                                                 EqualTo('password', '* Passwords must match.')])
-    country = CountrySelectField('Country', validators=[InputRequired()])
-    city = StringField("City", validators=[InputRequired()])
-    address = StringField("Full Address", validators=[InputRequired()])
-    website = StringField("Web Site URL")
-    submit = SubmitField("Register User")
+                                EqualTo('password', '* Passwords must match.')], id='new_r')
+    country = CountrySelectField('Country', validators=[InputRequired()], id='country')
+    city = StringField("City", validators=[InputRequired()], id='city')
+    address = StringField("Full Address", validators=[InputRequired()], id='address')
+    website = StringField("Web Site URL", id='website')
+    submit = SubmitField("Register User", id='submit')
 
 
 class UpdateUserForm(FlaskForm):
@@ -158,12 +158,11 @@ class ChangeCurrencyFrom(FlaskForm):
 
 
 class ChangePasswordForm(FlaskForm):
-    current_pass = PasswordField('Enter current password', validators=[InputRequired(), password_validation])
+    current_pass = PasswordField('Enter current password', validators=[InputRequired(), password_validation], id='current_p')
     current_repeat = PasswordField('Re-Enter current password', validators=[InputRequired(),
-                                                                 EqualTo('current_pass', '* Passwords must match.')])
-    new_pass = PasswordField('Create new password', validators=[InputRequired(), password_validation])
-    new_repeat = PasswordField('Re-Enter new password', validators=[InputRequired(),
-                                                                    EqualTo('new_pass',
-                                                                            '* Passwords must match.')])
+                                   EqualTo('current_pass', '* Passwords must match.')], id='current_r')
+    new_pass = PasswordField('Create new password', validators=[InputRequired(), password_validation], id='new_p')
+    new_repeat = PasswordField('Re-Enter new password',
+                               validators=[InputRequired(), EqualTo('new_pass', '* Passwords must match.')], id='new_r')
     submit = SubmitField("Update Password")
 
