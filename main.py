@@ -7,7 +7,6 @@ import os
 
 load_dotenv()
 
-# make environment variables later...
 SECRET = os.getenv('SECRET')
 DB_HOST_NAME = os.getenv('DB_HOST_NAME')
 DB_NAME = os.getenv('DB_NAME')
@@ -31,12 +30,9 @@ engine = create_engine(SQLALCHEMY_DB_URI)
 app = Flask(__name__)
 app.config['SECRET_KEY'] = APP_KEY
 
-# CONNECT TO DB
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DB_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app, session_options={"autoflush": False})
-
-
 
 
 class MessageManager:
@@ -52,18 +48,6 @@ class MessageManager:
     def flash_messages(self):
         for msg in self.messages:
             flash(msg)
-
-    def login_messages(self, details):
-        self.messages = []
-        if details == 'user not found':
-            self.messages.append('User not found, Please try again')
-        if details == 'login OK':
-            self.messages.append('Logged in successfully.')
-        if details == 'pass error':
-            self.messages.append('Wrong Password. Please try again.')
-        if details == 'pass change':
-            self.messages.append('Password was changed successfully.')
-        self.flash_messages()
 
     def database_error(self, details):
         if 'user_name' in details:

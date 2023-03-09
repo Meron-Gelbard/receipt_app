@@ -63,13 +63,13 @@ def login():
             user_2_login = User.query.filter_by(email=form.email.data.lower()).first()
             if not user_2_login:
                 message_manager.clear()
-                message_manager.login_messages('user not found')
+                message_manager.communicate('User not found, Please try again')
                 return render_template("login.html", form=form)
             elif user_2_login:
                 password_ok = check_password_hash(pwhash=user_2_login.password, password=form.password.data)
                 if not password_ok:
                     message_manager.clear()
-                    message_manager.login_messages('pass error')
+                    message_manager.communicate('Wrong Password. Please try again.')
                     return render_template("login.html", form=form)
                 elif password_ok:
                     if user_2_login.email_confirmed:
@@ -84,7 +84,7 @@ def login():
                             return abort(400)
 
                         message_manager.clear()
-                        message_manager.login_messages('login OK')
+                        message_manager.communicate('Logged in successfully.')
                         return redirect(f'/{user_2_login.user_name}/dashboard/documents')
                     else:
                         message_manager.clear()
@@ -197,7 +197,7 @@ def password_recovery():
                 message_manager.communicate(f'Password recovery link sent to {user_2_recover.email}.')
                 return redirect(f'/login')
             else:
-                message_manager.communicate('User not found')
+                message_manager.communicate('User not found, Please try again')
                 return render_template("recover_password.html", form=form)
         message_manager.form_validation_error(form.errors.items())
         return render_template("recover_password.html", form=form)
@@ -214,7 +214,7 @@ def password_renew(user_name):
                                                    method='pbkdf2:sha256', salt_length=8)
             response = change_user_password(user_name, new_pass_hash)
             if response == 'OK':
-                message_manager.login_messages('pass change')
+                message_manager.communicate('Password changed successfully.')
                 return redirect(f'/login')
             else:
                 message_manager.database_error(response)
@@ -289,13 +289,13 @@ def change_password(user_name):
                                                        method='pbkdf2:sha256', salt_length=8)
                 response = change_user_password(user_name, new_pass_hash)
                 if response == 'OK':
-                    message_manager.login_messages('pass change')
+                    message_manager.communicate('Password changed successfully.')
                     return redirect(f'/{user.user_name}/profile')
                 else:
                     message_manager.database_error(response)
                     return render_template('change_password.html', form=form, user=user)
             else:
-                message_manager.login_messages('pass error')
+                message_manager.communicate('Wrong Password. Please try again.')
                 render_template('change_password.html', form=form, user=user)
 
         message_manager.form_validation_error(form.errors.items())
