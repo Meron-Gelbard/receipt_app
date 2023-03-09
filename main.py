@@ -10,10 +10,10 @@ DB_HOST_NAME = 'localhost'
 DB_NAME = 'receipt_app1'
 DB_USERN = 'postgres'
 APP_KEY = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
-SMTP_CONFIG = {'smtp_server': 'mail.merong.zeevm.co.il',
+SMTP_CONFIG = {'smtp_server': '#######',
                'smtp_port': 587,
-               'smtp_username': 'kabalar@merong.zeevm.co.il',
-               'smtp_password': 'blackroad1961'}
+               'smtp_username': '#######
+               'smtp_password': '#######'}
 
 SQLALCHEMY_DB_URI = f'postgresql+psycopg2://{DB_USERN}:{SECRET}@{DB_HOST_NAME}/{DB_NAME}'
 api_key = 'def31c8d33834a5aa3f352665bd954f5'
