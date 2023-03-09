@@ -166,3 +166,14 @@ class ChangePasswordForm(FlaskForm):
                                validators=[InputRequired(), EqualTo('new_pass', '* Passwords must match.')], id='new_r')
     submit = SubmitField("Update Password")
 
+
+class RenewPasswordForm(FlaskForm):
+    new_pass = PasswordField('Create new password', validators=[InputRequired(), password_validation], id='new_p')
+    new_repeat = PasswordField('Re-Enter new password',
+                               validators=[InputRequired(), EqualTo('new_pass', '* Passwords must match.')], id='new_r')
+    submit = SubmitField("Save new password")
+
+
+class EmailFieldForm(FlaskForm):
+    email = StringField("Email", validators=[InputRequired(), Email()])
+    submit = SubmitField("Send confirmation")

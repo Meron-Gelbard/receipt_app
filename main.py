@@ -2,21 +2,24 @@ from sqlalchemy import create_engine
 from flask import Flask, flash, session
 from flask_sqlalchemy import SQLAlchemy
 import requests
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 
 # make environment variables later...
-SECRET = '1111'
-DB_HOST_NAME = 'localhost'
-DB_NAME = 'receipt_app1'
-DB_USERN = 'postgres'
-APP_KEY = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
-SMTP_CONFIG = {'smtp_server': 'mail.merong.zeevm.co.il',
-               'smtp_port': 587,
-               'smtp_username': 'kabalar@merong.zeevm.co.il',
-               'smtp_password': 'blackroad1961'}
+SECRET = os.getenv('SECRET')
+DB_HOST_NAME = os.getenv('DB_HOST_NAME')
+DB_NAME = os.getenv('DB_NAME')
+DB_USERN = os.getenv('DB_USERN')
+APP_KEY = os.getenv('APP_KEY')
+SMTP_CONFIG = {'smtp_server': os.getenv('smtp_server'),
+               'smtp_port': os.getenv('smtp_port'),
+               'smtp_username': os.getenv('smtp_username'),
+               'smtp_password': os.getenv('smtp_password')}
 
 SQLALCHEMY_DB_URI = f'postgresql+psycopg2://{DB_USERN}:{SECRET}@{DB_HOST_NAME}/{DB_NAME}'
-api_key = 'def31c8d33834a5aa3f352665bd954f5'
+api_key = os.getenv('api_key')
 
 try:
     client_details = requests.get(f'https://api.ipgeolocation.io/ipgeo?apiKey={api_key}').json()
@@ -26,7 +29,7 @@ except Exception:
 engine = create_engine(SQLALCHEMY_DB_URI)
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = {APP_KEY}
+app.config['SECRET_KEY'] = APP_KEY
 
 # CONNECT TO DB
 app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DB_URI

@@ -145,7 +145,11 @@ def get_user(**kwargs):
     try:
         return User.query.filter_by(id=kwargs['user_id']).first()
     except KeyError:
-        return User.query.filter_by(user_name=kwargs['user_name']).first()
+        try:
+            return User.query.filter_by(user_name=kwargs['user_name']).first()
+        except KeyError:
+            return User.query.filter_by(email=kwargs['email']).first()
+
 
 
 def get_customer(name):

@@ -64,13 +64,13 @@ def login():
             if not user_2_login:
                 message_manager.clear()
                 message_manager.login_messages('user not found')
-                return render_template("login_new.html", form=form)
+                return render_template("login.html", form=form)
             elif user_2_login:
                 password_ok = check_password_hash(pwhash=user_2_login.password, password=form.password.data)
                 if not password_ok:
                     message_manager.clear()
                     message_manager.login_messages('pass error')
-                    return render_template("login_new.html", form=form)
+                    return render_template("login.html", form=form)
                 elif password_ok:
                     if user_2_login.email_confirmed:
                         login_user(user_2_login, remember=False)
@@ -90,9 +90,9 @@ def login():
                         message_manager.clear()
                         message_manager.communicate(f'Please confirm E-mail address. '
                                                     f'Confirmation link sent to {user_2_login.email}.')
-                        return render_template("login_new.html", form=form)
+                        return render_template("login.html", form=form)
         message_manager.form_validation_error(form.errors.items())
-        return render_template("login_new.html", form=form)
+        return render_template("login.html", form=form)
 
 
 @app.route('/<user_name>/dashboard/documents', methods=["POST", "GET"])
@@ -147,19 +147,16 @@ def register_user():
             user_name = (form.first_name.data + form.last_name.data).lower()
             if isinstance(response, User):
                 session[f'uuid_{user_name}'] = uuid.uuid4()
-                print(session[f'uuid_{user_name}'])
                 new_user = User.query.filter_by(user_name=user_name).first()
                 EmailManager.send_email_confirm(name=f'{new_user.first_name} {new_user.last_name}', user_name=user_name,
                                                 email=new_user.email, uuid=session[f'uuid_{user_name}'])
-                # login_user(user_2_login, remember=False)
-                # session['user_last_log'] = datetime.now().strftime("%d/%m/%Y  |  %H:%M")
                 message_manager.clear()
                 message_manager.communicate(f'Email confirmation sent to {new_user.email}.')
                 return redirect(f'/login')
             elif response['error'] == 'Database Error':
                 message_manager.database_error(response['details'])
         message_manager.form_validation_error(form.errors.items())
-        return render_template("register_new.html", form=form)
+        return render_template("register.html", form=form)
 
 
 @app.route('/email_confirm/<user_name>/<sent_uuid>')
@@ -168,15 +165,61 @@ def email_confirm(user_name, sent_uuid):
         if not session.get(f'uuid_{user_name}'):
             return redirect('/login')
         if sent_uuid == str(session[f'uuid_{user_name}']):
-            del session[f'uuid_{user_name}']
-            confirmed_user = get_user(user_name=user_name)
-            confirmed_user.email_confirmed = True
-            db.session.commit()
-            message_manager.clear()
-            message_manager.communicate('Email address confirmed!')
-            return redirect('/login')
+            if request.args.get('subject') == 'email confirm':
+                del session[f'uuid_{user_name}']
+                confirmed_user = get_user(user_name=user_name)
+                confirmed_user.email_confirmed = True
+                db.session.commit()
+                message_manager.clear()
+                message_manager.communicate('Email address confirmed!')
+                return redirect('/login')
+            elif request.args.get('subject') == 'password recover':
+                del session[f'uuid_{user_name}']
+                user = get_user(user_name=user_name)
+                login_user(user, remember=False)
+                return redirect(f'/{user_name}/password_renew')
         else:
             return abort(404)
+
+
+@app.route('/password_recovery', methods=['POST', 'GET'])
+def password_recovery():
+    form = EmailFieldForm()
+    with app.app_context():
+        if form.validate_on_submit():
+            user_2_recover = get_user(email=form.email.data)
+            if isinstance(user_2_recover, User):
+                session[f'uuid_{user_2_recover.user_name}'] = uuid.uuid4()
+                EmailManager.send_pass_recover(name=f'{user_2_recover.first_name} {user_2_recover.last_name}',
+                                               user_name=user_2_recover.user_name, email=user_2_recover.email,
+                                               uuid=session[f'uuid_{user_2_recover.user_name}'])
+                message_manager.clear()
+                message_manager.communicate(f'Password recovery link sent to {user_2_recover.email}.')
+                return redirect(f'/login')
+            else:
+                message_manager.communicate('User not found')
+                return render_template("recover_password.html", form=form)
+        message_manager.form_validation_error(form.errors.items())
+        return render_template("recover_password.html", form=form)
+
+
+@app.route('/<user_name>/password_renew', methods=['POST', 'GET'])
+@login_required
+def password_renew(user_name):
+    with app.app_context():
+        user = get_user(user_name=user_name)
+        form = RenewPasswordForm()
+        if form.validate_on_submit():
+            new_pass_hash = generate_password_hash(password=form.new_pass.data,
+                                                   method='pbkdf2:sha256', salt_length=8)
+            response = change_user_password(user_name, new_pass_hash)
+            if response == 'OK':
+                message_manager.login_messages('pass change')
+                return redirect(f'/login')
+            else:
+                message_manager.database_error(response)
+                return render_template('renew_password.html', form=form, user=user)
+        return render_template('renew_password.html', form=form, user=user)
 
 
 @app.route('/<user_name>/profile', methods=["POST", "GET"])
