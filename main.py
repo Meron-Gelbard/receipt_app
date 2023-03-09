@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from flask import Flask, flash
+from flask import Flask, flash, session
 from flask_sqlalchemy import SQLAlchemy
 import requests
 
@@ -34,6 +34,8 @@ class MessageManager:
         self.messages = ['']
 
     def clear(self):
+        if session.get('_flashes'):
+            session['_flashes'].clear()
         self.messages = ['']
         self.flash_messages()
 
@@ -49,6 +51,8 @@ class MessageManager:
             self.messages.append('Logged in successfully.')
         if details == 'pass error':
             self.messages.append('Wrong Password. Please try again.')
+        if details == 'pass change':
+            self.messages.append('Password was changed successfully.')
         self.flash_messages()
 
     def database_error(self, details):
@@ -86,6 +90,15 @@ class MessageManager:
                     break
             if break_outer:
                 break
+        self.flash_messages()
+
+    def communicate(self, details):
+        if details == 'doc url':
+            self.messages.append('Document URL copied.')
+        if details == 'user update':
+            self.messages.append('User profile updated.')
+        if details == 'customer update':
+            self.messages.append('Customer profile updated.')
         self.flash_messages()
 
 

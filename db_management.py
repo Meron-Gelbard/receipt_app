@@ -86,7 +86,6 @@ def create_document(**kwargs):
         doc_type_count = Document.query.filter_by(user_id=kwargs['user_id'], doc_type=kwargs['doc_type']).count()
         if 'listed_customer' in kwargs.keys():
             customer_id = Customer.query.filter_by(name=kwargs['listed_customer']).first().customer_id
-            print(customer_id)
             new_document = Document(
                 user_id=kwargs['user_id'],
                 doc_type=kwargs['doc_type'],
@@ -131,6 +130,17 @@ def create_document(**kwargs):
         return new_document.doc_id
 
 
+def change_user_password(user_name, new_pass_hash):
+    with app.app_context():
+        user = get_user(user_name=user_name)
+        setattr(user, 'password', new_pass_hash)
+        try:
+            db.session.commit()
+            return 'OK'
+        except exc.SQLAlchemyError as error:
+            return {'error': 'Database Error', 'details': (str(error.__dict__['orig']))}
+
+
 def get_user(**kwargs):
     try:
         return User.query.filter_by(id=kwargs['user_id']).first()
@@ -147,4 +157,11 @@ def get_address(user_id):
 
 
 def get_user_attrs(user):
-    return {**user.get_attrs(), **Address.query.filter_by(user_id=user.id).first().get_attrs()}
+    temp = {**user.get_attrs(), **Address.query.filter_by(user_id=user.id).first().get_attrs()}
+    attrs = {}
+    field_hierarchy = ['first_name', 'last_name', 'email', 'company_name', 'phone', 'website',
+                       'address', 'city', 'country']
+    for field in field_hierarchy:
+        attrs[field] = temp[field]
+
+    return attrs

@@ -32,10 +32,12 @@
                 <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
             </a>
             <div class="collapse" id="collapseCreate" aria-labelledby="headingOne" data-bs-parent="#sidenavAccordion">
-                <nav class="sb-sidenav-menu-nested nav">
-                    <a class="nav-link" href="/{{ user.user_name }}/dashboard/create_document">Receipt / Invoice</a>
-                    <a class="nav-link" href="/{{ user.user_name }}/dashboard/create_document">Job Order / Quotation</a>
-                </nav>
+            <nav class="sb-sidenav-menu-nested nav">
+            <a class="nav-link" href="{{ url_for('new_document', user_name=user.user_name, selection='Receipt') }}">Receipt</a>
+            <a class="nav-link" href="{{ url_for('new_document', user_name=user.user_name, selection='Invoice') }}">Invoice</a>
+            <a class="nav-link" href="{{ url_for('new_document', user_name=user.user_name, selection='Quotation') }}">Quotation</a>
+            <a class="nav-link" href="{{ url_for('new_document', user_name=user.user_name, selection='Job Order') }}">Job Order</a>
+            </nav>
             </div>
             <a class="nav-link" href="/{{ user.user_name }}/dashboard/customers">
                 <div class="sb-nav-link-icon"><i class="fas fa-users"></i></div>
@@ -54,6 +56,8 @@
     </div>
     <div class="sb-sidenav-footer">
         <div class="small">Logged in as:</div>
-        {{ user.first_name }} {{ user.last_name }}
+        <a class="copy_doc_url" href="{{ url_for('user_profile', user_name=user.user_name) }}">
+        {{ user.first_name }} {{ user.last_name }}</a><br>
+        Last login:<br><span class="smaller"> {{  session['user_last_log'] }} </span>
     </div>
 </nav>

@@ -11757,11 +11757,15 @@ body {
 .copy_doc_url {
   text-decoration: none;
   color: Gray;
-  font-size: 12px;
+  font-size: 14px;
 }
 
 .copy_doc_url:hover {
   color: black;
   text-decoration: none;
-  font-size: 11px;
+  font-size: 13px;
+}
+
+.smaller {
+  font-size: 0.825em;
 }

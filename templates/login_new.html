@@ -21,21 +21,23 @@
                                         {{ field(class="form-control") }}<br>
                                         {% if field.errors: %}
                                         {% for error in field.errors %}
-                                        <span>{{ error }}</span>
+                                        <span class=flash_msg>{{ error }}</span>
                                         {% endfor %}
                                         {% endif %}
                                     </div>
                                     {% endif %}
                                     {% endfor %}
 
-                                    <div class="form-check mb-3">
-                                        {% with messages = get_flashed_messages() %}
-                                        {% if messages %}
-                                        {% for message in messages %}
-                                        <span class=flash_msg>{{ message }}</span>
-                                        {% endfor %}
-                                        {% endif %}
-                                        {% endwith %}
+                                    <div class="form-check mb-3" >
+                                        <div id="flash">
+                                            {% with messages = get_flashed_messages() %}
+                                            {% if messages %}
+                                                {% for message in messages %}
+                                                    <span class=flash_msg>{{ message }}</span>
+                                                {% endfor %}
+                                            {% endif %}
+                                            {% endwith %}
+                                        </div>
                                     </div>
                                     <div class="d-flex align-items-center justify-content-between mt-4 mb-0">
                                         <a href='/register' class="btn btn-primary">Register</a>

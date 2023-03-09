@@ -33,6 +33,7 @@ class User(UserMixin, db.Model, Base):
             if key not in ['id', 'password', 'address_id', 'documents', 'customers', 'doc_count', 'create_date',
                            'get_user_attrs', 'get_id', '_sa_instance_state', 'user_name', 'last_login', 'currency']:
                 user_attrs[key] = value
+
         return user_attrs
 
     def get_id(self):

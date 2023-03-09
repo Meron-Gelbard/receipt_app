@@ -84,7 +84,6 @@ class RegisterUserForm(FlaskForm):
 
 
 class UpdateUserForm(FlaskForm):
-
     first_name = StringField("First Name", validators=[InputRequired()])
     last_name = StringField("Last Name", validators=[InputRequired()])
     email = StringField("E-mail Address", validators=[InputRequired(),
@@ -156,3 +155,15 @@ class LoginForm(FlaskForm):
 class ChangeCurrencyFrom(FlaskForm):
     currency = CurrencySelectField('Select Currency', validators=[InputRequired()])
     submit = SubmitField("Change")
+
+
+class ChangePasswordForm(FlaskForm):
+    current_pass = PasswordField('Enter current password', validators=[InputRequired(), password_validation])
+    current_repeat = PasswordField('Re-Enter current password', validators=[InputRequired(),
+                                                                 EqualTo('current_pass', '* Passwords must match.')])
+    new_pass = PasswordField('Create new password', validators=[InputRequired(), password_validation])
+    new_repeat = PasswordField('Re-Enter new password', validators=[InputRequired(),
+                                                                    EqualTo('new_pass',
+                                                                            '* Passwords must match.')])
+    submit = SubmitField("Update Password")
+

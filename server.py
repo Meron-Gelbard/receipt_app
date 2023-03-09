@@ -1,8 +1,6 @@
 from urllib.parse import urlparse, urljoin
 from flask import render_template, redirect, request, abort, session, url_for, Response
-from db_architecture import Document, User
-from db_management import get_user, get_customer, register_new_user, create_document, \
-    update_user_profile, get_user_attrs, update_customer_profile
+from db_management import *
 from forms import *
 from main import app, db, message_manager
 from pdf_document import DocPdf
@@ -10,7 +8,6 @@ from flask_login import login_user, LoginManager, login_required, current_user, 
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import pyperclip
-from sqlalchemy import func
 
 
 # start flask-login
@@ -62,7 +59,7 @@ def login():
     with app.app_context():
         form = LoginForm()
         if form.validate_on_submit():
-            user_2_login = User.query.filter_by(email=form.email.data).first()
+            user_2_login = User.query.filter_by(email=form.email.data.lower()).first()
             if not user_2_login:
                 message_manager.login_messages('user not found')
                 return render_template("login_new.html", form=form)
@@ -83,7 +80,7 @@ def login():
                         return abort(400)
 
                     message_manager.clear()
-                    print(user_2_login.documents)
+                    message_manager.login_messages('login OK')
                     return redirect(f'/{user_2_login.user_name}/dashboard/documents')
         message_manager.form_validation_error(form.errors.items())
         return render_template("login_new.html", form=form)
@@ -97,19 +94,20 @@ def user_documents(user_name):
     user = get_user(user_name=user_name)
     user.doc_count = Document.query.filter_by(user_id=user.id).count()
     db.session.commit()
-    message_manager.clear()
     return render_template('dashboard_docs.html', user=user, new_doc=new_doc, doc_url=copy_doc_url)
 
 
 @app.route('/copy_doc_url')
 @login_required
 def copy_doc_url():
+    message_manager.clear()
     serial = request.args['serial']
     user_name = request.args['user']
     host = request.url_root
     doc_local_url = f'{host}{user_name}/doc_preview/{serial}'
     pyperclip.copy(doc_local_url)
-    return Response(status=204)
+    message_manager.communicate('doc url')
+    return redirect(f'/{user_name}/dashboard/documents')
 
 
 @app.route('/<user_name>/dashboard/customers')
@@ -129,7 +127,7 @@ def register_user():
             response = register_new_user(
                 first_name=form.first_name.data,
                 last_name=form.last_name.data,
-                email=form.email.data,
+                email=form.email.data.lower(),
                 phone=form.phone.data,
                 company_name=form.company_name.data,
                 password=hashed_password,
@@ -179,6 +177,8 @@ def user_profile(user_name):
 
                 if updated_response:
                     user = get_user(user_name=update_params['user_params']['user_name'])
+                    message_manager.clear()
+                    message_manager.communicate('user update')
                     return redirect(f'/{user.user_name}/profile')
                 elif updated_response['error'] == 'Database Error':
                     message_manager.database_error(updated_response['details'])
@@ -200,6 +200,32 @@ def user_profile(user_name):
                            currency=user.currency)
 
 
+@app.route('/<user_name>/change_password', methods=['GET', 'POST'])
+@login_required
+def change_password(user_name):
+    with app.app_context():
+        message_manager.clear()
+        user = get_user(user_name=user_name)
+        form = ChangePasswordForm()
+        if form.validate_on_submit():
+            current_pass_ok = check_password_hash(pwhash=user.password, password=form.current_pass.data)
+            if current_pass_ok:
+                new_pass_hash = generate_password_hash(password=form.new_pass.data, method='pbkdf2:sha256', salt_length=8)
+                response = change_user_password(user_name, new_pass_hash)
+                if response == 'OK':
+                    message_manager.login_messages('pass change')
+                    return redirect(f'/{user.user_name}/profile')
+                else:
+                    message_manager.database_error(response)
+                    return render_template('change_password.html', form=form, user=user)
+            else:
+                message_manager.login_messages('pass error')
+                render_template('change_password.html', form=form, user=user)
+
+        message_manager.form_validation_error(form.errors.items())
+        return render_template('change_password.html', form=form, user=user)
+
+
 @app.route('/<user_name>/customers/<customer>', methods=["POST", "GET"])
 @login_required
 def customer_profile(user_name, customer):
@@ -208,6 +234,7 @@ def customer_profile(user_name, customer):
     form = UpdateCustomerForm()
     customer = get_customer(customer)
     customer_attrs = customer.get_attrs()
+    doc_count = Document.query.filter_by(user_id=user.id, customer_id=customer.customer_id).count()
     with app.app_context():
         if edit:
             if form.validate_on_submit():
@@ -220,17 +247,19 @@ def customer_profile(user_name, customer):
 
                 if updated_response:
                     customer = get_customer(update_params['name'])
+                    message_manager.clear()
+                    message_manager.communicate('customer update')
                     return redirect(f'/{user.user_name}/customers/{customer.name}')
 
                 elif updated_response['error'] == 'Database Error':
                     return render_template("customer_profile.html", form=form, user=user, edit=True,
-                                           customer_attrs=customer_attrs, customer=customer)
+                                           customer_attrs=customer_attrs, customer=customer, doc_count=doc_count)
             else:
                 message_manager.form_validation_error(form.errors.items())
                 return render_template("customer_profile.html", form=form, user=user, edit=True,
-                                       customer_attrs=customer_attrs, customer=customer)
+                                       customer_attrs=customer_attrs, customer=customer, doc_count=doc_count)
     return render_template("customer_profile.html", form=form, user=user, customer=customer,
-                           customer_attrs=customer_attrs)
+                           customer_attrs=customer_attrs,  doc_count=doc_count)
 
 
 @app.route('/<user_name>/dashboard/create_document', methods=["POST", "GET"])
@@ -240,6 +269,8 @@ def new_document(user_name):
     checkbox = request.args.get('checkbox')
     form = NewDocumentForm.create(checkbox=checkbox)
     user = get_user(user_name=user_name)
+    if request.args.get('selection'):
+        form.doc_type.data = request.args.get('selection')
     if form.validate_on_submit():
         if checkbox == 'true':
             new_doc_id = create_document(
