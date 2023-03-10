@@ -56,6 +56,8 @@ def logout():
 
 @app.route('/login', methods=["POST", "GET"])
 def login():
+    if logged_check():
+        return redirect('/')
     session['new_doc'] = False
     with app.app_context():
         form = LoginForm()
@@ -163,6 +165,7 @@ def register_user():
 def email_confirm(user_name, sent_uuid):
     with app.app_context():
         if not session.get(f'uuid_{user_name}'):
+            message_manager.communicate('Confirmation token expired.')
             return redirect('/login')
         if sent_uuid == str(session[f'uuid_{user_name}']):
             if request.args.get('subject') == 'email confirm':
@@ -174,10 +177,9 @@ def email_confirm(user_name, sent_uuid):
                 message_manager.communicate('Email address confirmed!')
                 return redirect('/login')
             elif request.args.get('subject') == 'password recover':
-                del session[f'uuid_{user_name}']
-                user = get_user(user_name=user_name)
-                login_user(user, remember=False)
-                return redirect(f'/{user_name}/password_renew')
+                # user = get_user(user_name=user_name)
+                # login_user(user, remember=False)
+                return redirect(url_for('password_renew', user_name=user_name, sent_uuid=sent_uuid))
         else:
             return abort(404)
 
@@ -204,22 +206,26 @@ def password_recovery():
 
 
 @app.route('/<user_name>/password_renew', methods=['POST', 'GET'])
-@login_required
 def password_renew(user_name):
-    with app.app_context():
-        user = get_user(user_name=user_name)
-        form = RenewPasswordForm()
-        if form.validate_on_submit():
-            new_pass_hash = generate_password_hash(password=form.new_pass.data,
-                                                   method='pbkdf2:sha256', salt_length=8)
-            response = change_user_password(user_name, new_pass_hash)
-            if response == 'OK':
-                message_manager.communicate('Password changed successfully.')
-                return redirect(f'/login')
-            else:
-                message_manager.database_error(response)
-                return render_template('renew_password.html', form=form, user=user)
-        return render_template('renew_password.html', form=form, user=user)
+    if request.args.get('sent_uuid') == str(session[f'uuid_{user_name}']):
+        sent_uuid = request.args.get('sent_uuid')
+        with app.app_context():
+            user = get_user(user_name=user_name)
+            form = RenewPasswordForm()
+            if form.validate_on_submit():
+                new_pass_hash = generate_password_hash(password=form.new_pass.data,
+                                                       method='pbkdf2:sha256', salt_length=8)
+                response = change_user_password(user_name, new_pass_hash)
+                if response == 'OK':
+                    message_manager.communicate('Password changed successfully.')
+                    del session[f'uuid_{user_name}']
+                    return redirect(f'/login')
+                else:
+                    message_manager.database_error(response)
+                    return redirect(url_for('password_renew', user_name=user_name, sent_uuid=sent_uuid))
+            return render_template('renew_password.html', form=form, user=user, sent_uuid=sent_uuid)
+    else:
+        return abort(404)
 
 
 @app.route('/<user_name>/profile', methods=["POST", "GET"])

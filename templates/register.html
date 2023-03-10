@@ -30,7 +30,7 @@
                                     <div class="form-floating mb-3">
                                         {{ field(class="form-control-meron", id=field.id) }}
                                             {% if field==form.pass_repeat %}
-                                              <span><i id="new_check" class="fas fa-check green" style="display: none;"></i></span>
+                                              <span>&nbsp;<i id="new_check" class="fas fa-check green" style="display: none;"></i></span>
                                             {% endif %}
                                         {% if field.errors: %}
                                         {% for error in field.errors %}

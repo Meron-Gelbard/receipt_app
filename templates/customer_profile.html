@@ -17,7 +17,7 @@
                         {% with messages = get_flashed_messages() %}
                         {% if messages %}
                         {% for message in messages %}
-                        <span class="flash_msg">{{ message }}</span>
+                        <span class="flash_msg">&nbsp;&nbsp;{{ message }}</span>
                         {% endfor %}
                         {% endif %}
                         {% endwith %}
@@ -33,6 +33,7 @@
                                 <br><br>
                                 {% endfor %}
                             <a href="{{ url_for('customer_profile', user_name=user.user_name, edit=True, customer=customer.name) }}" class="btn btn-primary">Edit</a>
+                            <a href="/{{ user.user_name }}/dashboard/customers" class="btn btn-primary">Back to Customers</a>
                             {% elif edit %}
                             <form action="{{ url_for('customer_profile', user_name=user.user_name, edit=True, customer=customer.name) }}" method="POST" novalidate>
                                 {{ form.csrf_token }}

@@ -21,9 +21,10 @@ class DocPdf:
 
         background_image = 'static/assets/doc/doc_template.jpg'
         pdf_canvas = canvas.Canvas(buffer, pagesize=A4)
-        pdf_canvas.setTitle(f'{self.user.company_name} - {self.document.doc_type} {self.document.doc_id}')
+        pdf_canvas.setTitle(f'{self.user.company_name} - {self.document.doc_type} {self.document.doc_serial_num.split("_")[2]}')
         pdf_canvas.setAuthor(f'{self.user.first_name} {self.user.last_name}')
         pdf_canvas.setCreator('Kabalar - Document Management')
+        pdf_canvas.setSubject(f'{self.document.doc_type} from {self.user.company_name}')
 
         pdf_canvas.drawImage(background_image, 0, 0, width=A4[0], height=A4[1])
 
@@ -84,4 +85,4 @@ class DocPdf:
         buffer.seek(0)
         self.response = Response(buffer, mimetype='application/pdf')
         self.response.headers['Content-Disposition'] =\
-            f'inline; filename={self.document.doc_type} {self.document.doc_id}.pdf'
+            f'inline; filename={self.user.company_name} - {self.document.doc_type} {self.document.doc_serial_num.split("_")[2]}.pdf'

@@ -42,7 +42,7 @@ class MessageManager:
     def clear(self):
         if session.get('_flashes'):
             session['_flashes'].clear()
-        self.messages = ['']
+        self.messages = []
         self.flash_messages()
 
     def flash_messages(self):
@@ -68,14 +68,11 @@ class MessageManager:
         for fieldName, errorMessages in errors:
             for err in errorMessages:
                 if err == '* Invalid Email':
-                    self.messages.append(
-                        'Please enter a valid E-mail address.')
+                    self.messages.append('Please enter a valid E-mail address.')
                 if err == '* Passwords must match.':
-                    self.messages.append(
-                        'Please Repeat a matching password.')
+                    self.messages.append('Please Repeat a matching password.')
                 if err == '* Invalid Password':
-                    self.messages.append(
-                        'Password must contain at least one uppercase, one lowercase and one number character.')
+                    self.messages.append('Password must contain one uppercase, one lowercase and one number.')
                     break_outer = True
                     break
                 if err == '* Required':

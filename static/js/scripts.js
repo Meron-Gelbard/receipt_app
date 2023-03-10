@@ -15,7 +15,7 @@ window.addEventListener('DOMContentLoaded', event => {
 
 setTimeout(function() {
 document.getElementById("flash").style.display = "none";
-}, 3000);
+}, 3500);
 
 
 $(document).ready(function() {
