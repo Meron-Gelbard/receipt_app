@@ -1,3 +1,4 @@
+from flask import session
 from datetime import datetime
 from sqlalchemy import text, exc
 from db_architecture import User, Address, Document, Customer
@@ -45,11 +46,16 @@ def update_customer_profile(customer_name, update_params):
 
 
 def register_new_user(**kwargs):
+    count = User.query.filter_by(user_name=(kwargs['first_name'] + kwargs['last_name']).lower()).count()
+    if count > 0:
+        user_name = f"{(kwargs['first_name'] + kwargs['last_name']).lower()}_{str(count)}"
+    else:
+        user_name = (kwargs['first_name'] + kwargs['last_name']).lower()
     with app.app_context():
         new_user = User(
             first_name=kwargs['first_name'].capitalize(),
             last_name=kwargs['last_name'].capitalize(),
-            user_name=(kwargs['first_name'] + kwargs['last_name']).lower(),
+            user_name=user_name,
             email=kwargs['email'],
             phone=kwargs['phone'],
             company_name=kwargs['company_name'],
@@ -72,11 +78,12 @@ def register_new_user(**kwargs):
         try:
             db.session.commit()
         except exc.SQLAlchemyError as error:
-            return {'error': 'Database Error', 'details': (str(error.__dict__['orig']))}
+            return {'error': 'Database Error', 'details': str(error.__dict__['orig'])}
 
         db.session.execute(text(f"UPDATE users "
                                 f"SET address_id={user_address.address_id} WHERE id={user_address.user_id}"))
         db.session.commit()
+        session['new_user_name'] = new_user.user_name
         return new_user
 
 
@@ -93,7 +100,7 @@ def create_document(**kwargs):
                 subject=kwargs['subject'],
                 payment_amount=kwargs['payment_amount'],
                 payment_type=kwargs['payment_type'],
-                payment_currency=user.currency,
+                currency=kwargs['currency'],
                 customer_id=customer_id,
                 doc_serial_num=
                 f"{user.user_name}_{kwargs['doc_type'].lower().replace(' ', '')}_{doc_type_count + 1}_{datetime.now().strftime('%d%m%Y')}"
@@ -109,7 +116,7 @@ def create_document(**kwargs):
                 subject=kwargs['subject'],
                 payment_amount=kwargs['payment_amount'],
                 payment_type=kwargs['payment_type'],
-                payment_currency=user.currency,
+                currency=kwargs['currency'],
                 doc_serial_num=
                 f"{user.user_name}_{kwargs['doc_type'].lower().replace(' ', '')}_{doc_type_count+1}_{datetime.now().strftime('%d%m%Y')}"
             )

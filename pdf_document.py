@@ -50,7 +50,7 @@ class DocPdf:
         doc_subject.textLine(self.document.subject)
 
         payment_amount = pdf_canvas.beginText(434.5, A4[1] - 584)
-        payment_amount.textLine(f'{str(self.document.payment_amount)} {self.user.currency}')
+        payment_amount.textLine(f'{str(self.document.payment_amount)} {self.document.currency}')
 
         payment_type = pdf_canvas.beginText(433, A4[1] - 630)
         payment_type.textLine(self.document.payment_type)

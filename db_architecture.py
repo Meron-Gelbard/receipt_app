@@ -47,7 +47,7 @@ class Address(db.Model, Base):
     address_id: Mapped[int] = Column(Integer, primary_key=True)
     country = Column(String(100), nullable=False)
     city = Column(String(100), nullable=False)
-    address = Column(String(300), nullable=False, unique=True)
+    address = Column(String(300), nullable=False)
     user = relationship("User", back_populates="address")
     user_id = Column(ForeignKey("users.id", ondelete="CASCADE"))
 
@@ -67,7 +67,7 @@ class Document(db.Model, Base):
     doc_date = Column(Date, nullable=False)
     subject = Column(String(300), nullable=False)
     payment_amount = Column(Integer, nullable=False)
-    payment_currency = Column(String(5), nullable=False)
+    currency = Column(String(5), nullable=False)
     payment_type = Column(String(30), nullable=False)
     customer_id = Column(Integer, ForeignKey('customers.customer_id'))
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)

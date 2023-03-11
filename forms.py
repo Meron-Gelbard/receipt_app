@@ -20,6 +20,9 @@ class CurrencySelectField(SelectField):
                 symbol = row["Symbol"]
                 currencies[code] = {"currency": currency, "symbol": symbol}
         self.choices = [f'{value["currency"]} - {code} / {value["symbol"]}' for code, value in currencies.items()]
+        if current_user.is_authenticated:
+            self.default = current_user._get_current_object().currency
+            print(self.default)
 
 
 class CustomerSelectField(SelectField):
@@ -115,6 +118,7 @@ class NewDocumentForm:
                 doc_type = DocTypeSelectField('Document Type', validators=[InputRequired()])
                 subject = StringField("Subject", validators=[InputRequired()])
                 payment_amount = IntegerField("Payment Amount", validators=[InputRequired()])
+                currency = CurrencySelectField('Select Currency', validators=[InputRequired()])
                 payment_type = PaymentTypeSelectField('Payment Type', validators=[InputRequired()])
                 submit = SubmitField("Create Document")
 
@@ -130,6 +134,7 @@ class NewDocumentForm:
                 doc_type = DocTypeSelectField('Document Type', validators=[InputRequired()])
                 subject = StringField("Subject", validators=[InputRequired()])
                 payment_amount = IntegerField("Payment Amount", validators=[InputRequired()])
+                currency = CurrencySelectField('Select Currency', validators=[InputRequired()])
                 payment_type = PaymentTypeSelectField('Payment Type', validators=[InputRequired()])
                 customer_name = StringField("Customer Name", validators=[InputRequired()])
                 customer_phone = StringField("Customer Phone Number")

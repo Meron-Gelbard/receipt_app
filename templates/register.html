@@ -11,21 +11,30 @@
                         <div class="card shadow-lg border-0 rounded-lg mt-5">
                             <div class="card-header"><h3 class="text-center font-weight-light my-4">Kabalar - Register
                                 User</h3>
-                                <div class="form-check mb-3">
-                                        {% with messages = get_flashed_messages() %}
+                            </div>
+<!--                            <div class="form-check mb-3">-->
+<!--                                        {% with messages = get_flashed_messages() %}-->
+<!--                                        {% if messages %}-->
+<!--                                        {% for message in messages %}-->
+<!--                                        <span class="flash_msg" id="flash">{{ message }}</span>-->
+<!--                                        {% endfor %}-->
+<!--                                        {% endif %}-->
+<!--                                        {% endwith %}-->
+<!--                                    </div>-->
+                            <div class="card-body">
+                                <p class="lead">Enter your details to sign up and start documenting!</p>
+                                {% with messages = get_flashed_messages() %}
                                         {% if messages %}
                                         {% for message in messages %}
-                                        <span class="flash_msg" id="flash">{{ message }}</span>
+                                        <span class="flash_msg" id="flash">&nbsp;&nbsp;{{ message }}</span><br>
                                         {% endfor %}
                                         {% endif %}
                                         {% endwith %}
-                                    </div>
-                            </div>
-                            <div class="card-body">
+                                <br>
                                 <form action="{{ url_for('register_user') }}" method="POST" novalidate>
                                     {{ form.csrf_token }}
                                     {% for field in form %}
-                                    {% if field not in [form.csrf_token, form.submit, form.sign_up] %}
+                                    {% if field not in [form.csrf_token, form.submit] %}
                                     {{ field.label }}<br>
                                     <div class="form-floating mb-3">
                                         {{ field(class="form-control-meron", id=field.id) }}
@@ -45,8 +54,8 @@
                                     </div>
                                 </form>
                             </div>
-                            <div class="card-footer text-center py-3">
-                                <div class="small"><a href="/login">Have an account? Go to login</a></div>
+                            <span class="card-footer text-center py-3">
+                                <span><a href="/login">Have an account? Go to login</a></span>
                             </div>
                         </div>
                     </div>

@@ -52,14 +52,12 @@ class MessageManager:
     def database_error(self, details):
         if 'user_name' in details:
             self.messages.append('This user name already exists.')
-        if 'address' in details:
-            self.messages += ['This address is already in use.',
-                              'Please be more specific if needed or choose a different address.']
-        if 'email' in details:
+        elif 'email' in details:
             self.messages.append('This E-Mail address is already in use.')
-        self.flash_messages()
-        if 'company_name' in details:
-            self.messages.append('This company name is already in use. Only one account per company is allowed.')
+        elif 'phone' in details:
+            self.messages.append('This phone number is already in use.')
+        elif 'company_name' in details:
+            self.messages.append('This company name is already in use. One account per company allowed.')
         self.flash_messages()
 
     def form_validation_error(self, errors):

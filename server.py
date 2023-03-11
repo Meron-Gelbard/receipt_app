@@ -146,8 +146,9 @@ def register_user():
                 city=form.city.data,
                 address=form.address.data,
                 website=form.website.data)
-            user_name = (form.first_name.data + form.last_name.data).lower()
             if isinstance(response, User):
+                user_name = session.get('new_user_name')
+                del session['new_user_name']
                 session[f'uuid_{user_name}'] = uuid.uuid4()
                 new_user = User.query.filter_by(user_name=user_name).first()
                 EmailManager.send_email_confirm(name=f'{new_user.first_name} {new_user.last_name}', user_name=user_name,
@@ -156,6 +157,7 @@ def register_user():
                 message_manager.communicate(f'Email confirmation sent to {new_user.email}.')
                 return redirect(f'/login')
             elif response['error'] == 'Database Error':
+                message_manager.clear()
                 message_manager.database_error(response['details'])
         message_manager.form_validation_error(form.errors.items())
         return render_template("register.html", form=form)
@@ -350,6 +352,7 @@ def new_document(user_name):
     message_manager.clear()
     checkbox = request.args.get('checkbox')
     form = NewDocumentForm.create(checkbox=checkbox)
+    form.currency.render_kw = {'value': form.currency.default}
     user = get_user(user_name=user_name)
     if request.args.get('selection'):
         form.doc_type.data = request.args.get('selection')
@@ -360,6 +363,7 @@ def new_document(user_name):
                 doc_type=form.doc_type.data,
                 subject=form.subject.data,
                 payment_amount=int(form.payment_amount.data),
+                currency=form.currency.data.split(' ')[-3],
                 payment_type=form.payment_type.data,
                 listed_customer=form.listed_customers.data)
         else:
@@ -368,6 +372,7 @@ def new_document(user_name):
                 doc_type=form.doc_type.data,
                 subject=form.subject.data,
                 payment_amount=int(form.payment_amount.data),
+                currency=form.currency.data.split(' ')[-3],
                 payment_type=form.payment_type.data,
                 customer_name=form.customer_name.data,
                 customer_phone=form.customer_phone.data,

@@ -2213,9 +2213,12 @@ progress {
 
 
 .form-control, .dataTable-input {
-  display: block;
-  width: 100%;
-  padding: 0.375rem 0.75rem;
+  margin-top: 1%;
+  margin-bottom: 1%;
+  align: center;
+  display: inline-block;
+  width: 60%;
+  padding: 0.75rem 0.75rem;
   font-size: 1rem;
   font-weight: 400;
   line-height: 1.5;
@@ -11777,6 +11780,10 @@ body {
 
 .smaller {
   font-size: 0.825em;
+}
+
+.smallerler {
+  font-size: 0.65em;
 }
 
 .green {
