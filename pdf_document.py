@@ -49,6 +49,14 @@ class DocPdf:
         doc_subject = pdf_canvas.beginText(90.5, A4[1] - 328)
         doc_subject.textLine(self.document.subject)
 
+        details_lines = []
+        line_y = A4[1] - 369.5
+        for line in self.document.extra_details.split('\n'):
+            detail_line = pdf_canvas.beginText(90.5, line_y)
+            detail_line.textLine(line[:-1])
+            details_lines.append(detail_line)
+            line_y -= 20
+
         payment_amount = pdf_canvas.beginText(434.5, A4[1] - 584)
         payment_amount.textLine(f'{str(self.document.payment_amount)} {self.document.currency}')
 
@@ -74,6 +82,8 @@ class DocPdf:
         pdf_canvas.drawText(doc_subject)
         pdf_canvas.drawText(payment_amount)
         pdf_canvas.drawText(payment_type)
+        for line in details_lines:
+            pdf_canvas.drawText(line)
 
         pdf_canvas.setFont('Helvetica', 11)
         pdf_canvas.drawText(contact_a)

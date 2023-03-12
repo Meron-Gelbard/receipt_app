@@ -1,6 +1,7 @@
 from flask_login import current_user
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField, PasswordField, ValidationError, SelectField, IntegerField, BooleanField
+from wtforms import StringField, SubmitField, PasswordField, ValidationError, SelectField,\
+    IntegerField, TextAreaField, BooleanField
 from wtforms.validators import InputRequired, Email, EqualTo
 import re
 import pycountry
@@ -20,9 +21,10 @@ class CurrencySelectField(SelectField):
                 symbol = row["Symbol"]
                 currencies[code] = {"currency": currency, "symbol": symbol}
         self.choices = [f'{value["currency"]} - {code} / {value["symbol"]}' for code, value in currencies.items()]
-        if current_user.is_authenticated:
-            self.default = current_user._get_current_object().currency
-            print(self.default)
+        for choice in self.choices:
+            if current_user._get_current_object().currency in choice:
+                self.default = choice
+                break
 
 
 class CustomerSelectField(SelectField):
@@ -84,6 +86,7 @@ class RegisterUserForm(FlaskForm):
     address = StringField("Full Address", validators=[InputRequired()], id='address')
     website = StringField("Web Site URL", id='website')
     submit = SubmitField("Register User", id='submit')
+    show_pass = BooleanField('Show password')
 
 
 class UpdateUserForm(FlaskForm):
@@ -120,11 +123,12 @@ class NewDocumentForm:
                 payment_amount = IntegerField("Payment Amount", validators=[InputRequired()])
                 currency = CurrencySelectField('Select Currency', validators=[InputRequired()])
                 payment_type = PaymentTypeSelectField('Payment Type', validators=[InputRequired()])
+                extra_details = TextAreaField('Extra Details')
                 submit = SubmitField("Create Document")
 
                 def __init__(self):
                     super(NewDocForm, self).__init__()
-                    self.fields = ['doc_type', 'subject', 'listed_customers', 'payment_amount', 'payment_type']
+                    self.fields = ['doc_type', 'subject', 'listed_customers', 'payment_amount', 'payment_type', 'extra_details']
 
             return NewDocForm()
 
@@ -141,12 +145,13 @@ class NewDocumentForm:
                 customer_address = StringField("Customer Address")
                 customer_email = StringField("Customer E-Mail Address",
                                               validators=[InputRequired(), Email('* Invalid Email')])
+                extra_details = TextAreaField('Extra Details')
                 submit = SubmitField("Create Document")
 
                 def __init__(self):
                     super(NewDocForm1, self).__init__()
                     self.fields = ['doc_type', 'subject', 'customer_name', 'customer_phone', 'customer_address',
-                                   'customer_email', 'payment_amount', 'payment_type']
+                                   'customer_email', 'payment_amount', 'payment_type', 'extra_details']
 
             return NewDocForm1()
 
@@ -155,6 +160,7 @@ class LoginForm(FlaskForm):
     email = StringField("Email", validators=[InputRequired(), Email()])
     password = PasswordField("Password", validators=[InputRequired()])
     submit = SubmitField("Log In")
+    show_pass = BooleanField('Show Password')
 
 
 class ChangeCurrencyFrom(FlaskForm):
@@ -170,6 +176,7 @@ class ChangePasswordForm(FlaskForm):
     new_repeat = PasswordField('Re-Enter new password',
                                validators=[InputRequired(), EqualTo('new_pass', '* Passwords must match.')], id='new_r')
     submit = SubmitField("Update Password")
+    show_pass = BooleanField('Show Passwords')
 
 
 class RenewPasswordForm(FlaskForm):
@@ -177,6 +184,7 @@ class RenewPasswordForm(FlaskForm):
     new_repeat = PasswordField('Re-Enter new password',
                                validators=[InputRequired(), EqualTo('new_pass', '* Passwords must match.')], id='new_r')
     submit = SubmitField("Save new password")
+    show_pass = BooleanField('Show Passwords')
 
 
 class EmailFieldForm(FlaskForm):

@@ -2217,7 +2217,7 @@ progress {
   margin-bottom: 1%;
   align: center;
   display: inline-block;
-  width: 60%;
+  width: 85%;
   padding: 0.75rem 0.75rem;
   font-size: 1rem;
   font-weight: 400;
@@ -2690,6 +2690,7 @@ textarea.form-control-lg {
 
 .form-floating {
   position: relative;
+  margin-left: 1%
 }
 .form-floating > .form-control, .form-floating > .dataTable-input,
 .form-floating > .form-select,
@@ -4592,6 +4593,12 @@ textarea.form-control-lg {
 .card-body {
   flex: 1 1 auto;
   padding: 1rem 1rem;
+}
+
+.card-body-space {
+  width: 65%;
+  flex: 1 1;
+  padding: 2rem 3rem;
 }
 
 .card-title {
@@ -11764,6 +11771,18 @@ body {
     background-color: transparent;
     color: inherit;
     outline: none;
+}
+
+.no_btn {
+    color: Gray;
+    border: none;
+    background-color: transparent;
+    color: inherit;
+    outline: none;
+}
+
+.no_btn:hover {
+    color: Black;
 }
 
 .copy_doc_url {

@@ -365,6 +365,7 @@ def new_document(user_name):
                 payment_amount=int(form.payment_amount.data),
                 currency=form.currency.data.split(' ')[-3],
                 payment_type=form.payment_type.data,
+                extra_details=form.extra_details.data,
                 listed_customer=form.listed_customers.data)
         else:
             new_doc_id = create_document(
@@ -374,6 +375,7 @@ def new_document(user_name):
                 payment_amount=int(form.payment_amount.data),
                 currency=form.currency.data.split(' ')[-3],
                 payment_type=form.payment_type.data,
+                extra_details=form.extra_details.data,
                 customer_name=form.customer_name.data,
                 customer_phone=form.customer_phone.data,
                 customer_address=form.customer_address.data,

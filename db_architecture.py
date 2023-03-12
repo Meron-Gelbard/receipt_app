@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, String, Date, DateTime, Boolean
+from sqlalchemy import Column, Integer, ForeignKey, String, Date, DateTime, Boolean, Text
 from sqlalchemy.orm import relationship, Mapped, declarative_base
 from main import db
 from flask_login import UserMixin
@@ -69,6 +69,7 @@ class Document(db.Model, Base):
     payment_amount = Column(Integer, nullable=False)
     currency = Column(String(5), nullable=False)
     payment_type = Column(String(30), nullable=False)
+    extra_details = Column(Text, nullable=True)
     customer_id = Column(Integer, ForeignKey('customers.customer_id'))
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     customer = relationship('Customer', backref='customer')

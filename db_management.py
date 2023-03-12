@@ -100,6 +100,7 @@ def create_document(**kwargs):
                 subject=kwargs['subject'],
                 payment_amount=kwargs['payment_amount'],
                 payment_type=kwargs['payment_type'],
+                extra_details=kwargs['extra_details'],
                 currency=kwargs['currency'],
                 customer_id=customer_id,
                 doc_serial_num=
@@ -116,6 +117,7 @@ def create_document(**kwargs):
                 subject=kwargs['subject'],
                 payment_amount=kwargs['payment_amount'],
                 payment_type=kwargs['payment_type'],
+                extra_details=kwargs['extra_details'],
                 currency=kwargs['currency'],
                 doc_serial_num=
                 f"{user.user_name}_{kwargs['doc_type'].lower().replace(' ', '')}_{doc_type_count+1}_{datetime.now().strftime('%d%m%Y')}"

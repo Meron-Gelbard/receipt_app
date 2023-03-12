@@ -54,7 +54,7 @@
                 </div>
             </div>
             <div class="card">
-                <div class="card-body">
+                <div class="card-body-space">
                     <form action="{{ url_for('new_document', user_name=user.user_name, checkbox=checkbox) }}" method="POST" novalidate>
 
                             {{ form.csrf_token }}

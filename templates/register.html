@@ -12,15 +12,6 @@
                             <div class="card-header"><h3 class="text-center font-weight-light my-4">Kabalar - Register
                                 User</h3>
                             </div>
-<!--                            <div class="form-check mb-3">-->
-<!--                                        {% with messages = get_flashed_messages() %}-->
-<!--                                        {% if messages %}-->
-<!--                                        {% for message in messages %}-->
-<!--                                        <span class="flash_msg" id="flash">{{ message }}</span>-->
-<!--                                        {% endfor %}-->
-<!--                                        {% endif %}-->
-<!--                                        {% endwith %}-->
-<!--                                    </div>-->
                             <div class="card-body">
                                 <p class="lead">Enter your details to sign up and start documenting!</p>
                                 {% with messages = get_flashed_messages() %}
@@ -34,12 +25,14 @@
                                 <form action="{{ url_for('register_user') }}" method="POST" novalidate>
                                     {{ form.csrf_token }}
                                     {% for field in form %}
-                                    {% if field not in [form.csrf_token, form.submit] %}
+                                    {% if field not in [form.csrf_token, form.submit, form.show_pass] %}
                                     {{ field.label }}<br>
                                     <div class="form-floating mb-3">
                                         {{ field(class="form-control-meron", id=field.id) }}
                                             {% if field==form.pass_repeat %}
-                                              <span>&nbsp;<i id="new_check" class="fas fa-check green" style="display: none;"></i></span>
+                                            <span>&nbsp;<i id="new_check" class="fas fa-check green" style="display: none;"></i></span><br>
+                                            <span class="smaller">{{ form.show_pass() }}&nbsp;&nbsp;{{ form.show_pass.label }}</span>
+                                            <br><br>
                                             {% endif %}
                                         {% if field.errors: %}
                                         {% for error in field.errors %}
@@ -68,7 +61,7 @@
 <div id="layoutAuthentication_footer">
     {% include "footer.html" %}
 </div>
-<script src="../../static/js/scripts.js"></script>
+<script src="../../static/js/password_fields.js"></script>
 </body>
 
 {% endblock %}

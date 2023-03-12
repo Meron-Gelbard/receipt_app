@@ -17,7 +17,7 @@
                         {% with messages = get_flashed_messages() %}
                         {% if messages %}
                         {% for message in messages %}
-                        <span class="flash_msg">{{ message }}</span>
+                        <span class="flash_msg">&nbsp;&nbsp;&nbsp;{{ message }}</span>
                         {% endfor %}
                         {% endif %}
                         {% endwith %}
@@ -52,10 +52,10 @@
                             <span>&nbsp;-&nbsp;<a href="{{ url_for('user_profile', user_name=user.user_name, edit_currency=True) }}">Change</a></span></li>
                             {% elif edit_currency %}
                             <li class="breadcrumb-item active">&nbsp;&nbsp;Change Currency:
-                            <form action="{{ url_for('user_profile', user_name=user.user_name, edit_currency=True) }}" method="POST" novalidate>
+                            <span><form action="{{ url_for('user_profile', user_name=user.user_name, edit_currency=True) }}" method="POST" novalidate>
                                 {{ form_c.csrf_token }}
-                                {{ form_c.currency() }} {{form.submit() }}
-                            </form>
+                                {{ form_c.currency(style="width: 17rem;") }} {{form_c.submit(class="no_btn") }}
+                            </form></span>
                             </li>
                             {% endif %}
                         </ol>

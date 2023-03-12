@@ -16,7 +16,7 @@
                                 <form action="{{ url_for('login') }}" method="POST" novalidate>
                                     {{ form.csrf_token }}
                                     {% for field in form %}
-                                    {% if field not in [form.csrf_token, form.submit, form.send_confirm] %}
+                                    {% if field not in [form.csrf_token, form.submit, form.send_confirm, form.show_pass] %}
                                     {{ field.label }}<br>
                                     <div class="form-floating mb-3">
                                         {{ field(class="form-control") }}<br>
@@ -28,6 +28,7 @@
                                     </div>
                                     {% endif %}
                                     {% endfor %}
+                                    <span class="smaller">{{ form.show_pass() }}&nbsp;&nbsp;{{ form.show_pass.label }}</span>
 
                                     <div class="form-check mb-3" >
                                         <div id="flash">
@@ -60,6 +61,7 @@
 <div id="layoutAuthentication_footer">
     {% include "footer.html" %}
 </div>
+<script src="../../static/js/password_fields.js"></script>
 </body>
 
 {% endblock %}
