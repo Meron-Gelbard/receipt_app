@@ -2,6 +2,7 @@ from io import BytesIO
 from flask import Response
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
+from PIL import Image
 from datetime import datetime
 from db_architecture import Address
 
@@ -26,7 +27,13 @@ class DocPdf:
         pdf_canvas.setCreator('Kabalar - Document Management')
         pdf_canvas.setSubject(f'{self.document.doc_type} from {self.user.company_name}')
 
+        image = Image.open(self.user.logo[1:])
+        aspect_ratio = image.height / image.width
+        width = 160
+        height = width * aspect_ratio
+
         pdf_canvas.drawImage(background_image, 0, 0, width=A4[0], height=A4[1])
+        pdf_canvas.drawImage(self.user.logo[1:], A4[0] - width - 30, A4[1] - height - 50, height=height, width=width, mask='auto')
 
         sender_name = pdf_canvas.beginText(18.7, A4[1] - 45.5)
         sender_name.textLine(f'{self.user.first_name} {self.user.last_name}')

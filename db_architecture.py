@@ -27,6 +27,8 @@ class User(UserMixin, db.Model, Base):
     doc_count = Column(Integer, nullable=False)
     currency = Column(String(5), nullable=True)
     website = Column(String(1000), nullable=True)
+    logo = Column(String, nullable=True)
+
 
     def get_attrs(self):
         user_attrs = {}

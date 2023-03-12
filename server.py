@@ -10,9 +10,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import pyperclip
 import uuid
+import os
 
-
-# start flask-login
 login_manager = LoginManager()
 login_manager.init_app(app)
 
@@ -179,8 +178,6 @@ def email_confirm(user_name, sent_uuid):
                 message_manager.communicate('Email address confirmed!')
                 return redirect('/login')
             elif request.args.get('subject') == 'password recover':
-                # user = get_user(user_name=user_name)
-                # login_user(user, remember=False)
                 return redirect(url_for('password_renew', user_name=user_name, sent_uuid=sent_uuid))
         else:
             return abort(404)
@@ -393,6 +390,38 @@ def view_doc_pdf(user_name, **kwargs):
     doc = Document.query.filter_by(doc_serial_num=kwargs['doc_serial']).first()
     doc_pdf = DocPdf(user=user, document=doc)
     return doc_pdf.response
+
+
+@app.route('/<user_name>/upload_logo', methods=['GET', 'POST'])
+@login_required
+def upload_logo(user_name):
+    message_manager.clear()
+    with app.app_context():
+        user = get_user(user_name=user_name)
+        logo_path = f'static/assets/img/users/{user_name}'
+        if not os.path.exists(logo_path):
+            os.mkdir(logo_path)
+        if request.method == 'POST':
+            file = request.files['file']
+            file.save(f'{logo_path}/logo.png')
+            user.logo = f'/{logo_path}/logo.png'
+            db.session.commit()
+            message_manager.communicate('Logo upload successful.')
+            return redirect(url_for('user_profile', user_name=user_name))
+        message_manager.communicate('File upload failed.')
+        return redirect(url_for('user_profile', user_name=user_name))
+
+
+@app.route('/<user_name>/remove_logo')
+@login_required
+def remove_logo(user_name):
+    message_manager.clear()
+    with app.app_context():
+        user = get_user(user_name=user_name)
+        user.logo = '/static/assets/img/default_logo.png'
+        db.session.commit()
+    message_manager.communicate('Logo removed.')
+    return redirect(url_for('user_profile', user_name=user_name))
 
 
 if __name__ == "__main__":

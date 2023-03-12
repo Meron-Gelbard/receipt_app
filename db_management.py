@@ -66,6 +66,8 @@ def register_new_user(**kwargs):
             currency=client_details["currency"]["code"],
             last_login=datetime.now())
 
+        new_user.logo = '/static/assets/img/default_logo.png'
+
         db.session.add(new_user)
 
         user_address = Address(
