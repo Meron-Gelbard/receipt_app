@@ -1,5 +1,5 @@
 from urllib.parse import urlparse, urljoin
-from flask import render_template, redirect, request, abort, session, url_for
+from flask import render_template, redirect, request, abort, url_for
 from email_manager import EmailManager
 from db_management import *
 from forms import *
@@ -11,9 +11,21 @@ from datetime import datetime
 import pyperclip
 import uuid
 import os
+import git
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+
+@app.route('/update_server', methods=['POST'])
+def webhook():
+    if request.method == 'POST':
+        repo = git.Repo('https://github.com/Meron-Gelbard/receipt_app')
+        origin = repo.remotes.origin
+        origin.pull()
+        return 'Updated PythonAnywhere successfully', 200
+    else:
+        return 'Wrong event type', 400
 
 
 def logged_check():
@@ -63,13 +75,13 @@ def login():
         if form.validate_on_submit():
             user_2_login = User.query.filter_by(email=form.email.data.lower()).first()
             if not user_2_login:
-                message_manager.clear()
+                # message_manager.clear()
                 message_manager.communicate('User not found, Please try again')
                 return render_template("login.html", form=form)
             elif user_2_login:
                 password_ok = check_password_hash(pwhash=user_2_login.password, password=form.password.data)
                 if not password_ok:
-                    message_manager.clear()
+                    # message_manager.clear()
                     message_manager.communicate('Wrong Password. Please try again.')
                     return render_template("login.html", form=form)
                 elif password_ok:
@@ -84,11 +96,11 @@ def login():
                         if not is_safe_url(_next):
                             return abort(400)
 
-                        message_manager.clear()
+                        # message_manager.clear()
                         message_manager.communicate('Logged in successfully.')
                         return redirect(f'/{user_2_login.user_name}/dashboard/documents')
                     else:
-                        message_manager.clear()
+                        # message_manager.clear()
                         message_manager.communicate(f'Please confirm E-mail address. '
                                                     f'Confirmation link sent to {user_2_login.email}.')
                         return render_template("login.html", form=form)
@@ -110,7 +122,7 @@ def user_documents(user_name):
 @app.route('/copy_doc_url')
 @login_required
 def copy_doc_url():
-    message_manager.clear()
+    # message_manager.clear()
     serial = request.args['serial']
     user_name = request.args['user']
     host = request.url_root
@@ -124,7 +136,7 @@ def copy_doc_url():
 @login_required
 def user_customers(user_name):
     user = get_user(user_name=user_name)
-    message_manager.clear()
+    # message_manager.clear()
     return render_template('dashboard_customers.html', user=user)
 
 
@@ -152,11 +164,11 @@ def register_user():
                 new_user = User.query.filter_by(user_name=user_name).first()
                 EmailManager.send_email_confirm(name=f'{new_user.first_name} {new_user.last_name}', user_name=user_name,
                                                 email=new_user.email, uuid=session[f'uuid_{user_name}'])
-                message_manager.clear()
+                # message_manager.clear()
                 message_manager.communicate(f'Email confirmation sent to {new_user.email}.')
                 return redirect(f'/login')
             elif response['error'] == 'Database Error':
-                message_manager.clear()
+                # message_manager.clear()
                 message_manager.database_error(response['details'])
         message_manager.form_validation_error(form.errors.items())
         return render_template("register.html", form=form)
@@ -174,7 +186,7 @@ def email_confirm(user_name, sent_uuid):
                 confirmed_user = get_user(user_name=user_name)
                 confirmed_user.email_confirmed = True
                 db.session.commit()
-                message_manager.clear()
+                # message_manager.clear()
                 message_manager.communicate('Email address confirmed!')
                 return redirect('/login')
             elif request.args.get('subject') == 'password recover':
@@ -194,7 +206,7 @@ def password_recovery():
                 EmailManager.send_pass_recover(name=f'{user_2_recover.first_name} {user_2_recover.last_name}',
                                                user_name=user_2_recover.user_name, email=user_2_recover.email,
                                                uuid=session[f'uuid_{user_2_recover.user_name}'])
-                message_manager.clear()
+                # message_manager.clear()
                 message_manager.communicate(f'Password recovery link sent to {user_2_recover.email}.')
                 return redirect(f'/login')
             else:
@@ -257,7 +269,7 @@ def user_profile(user_name):
 
                 if updated_response:
                     user = get_user(user_name=update_params['user_params']['user_name'])
-                    message_manager.clear()
+                    # message_manager.clear()
                     message_manager.communicate('User profile updated.')
                     return redirect(f'/{user.user_name}/profile')
                 elif updated_response['error'] == 'Database Error':
@@ -328,7 +340,7 @@ def customer_profile(user_name, customer):
 
                 if updated_response:
                     customer = get_customer(update_params['name'])
-                    message_manager.clear()
+                    # message_manager.clear()
                     message_manager.communicate('Customer profile updated.')
                     return redirect(f'/{user.user_name}/customers/{customer.name}')
 
@@ -415,7 +427,7 @@ def upload_logo(user_name):
 @app.route('/<user_name>/remove_logo')
 @login_required
 def remove_logo(user_name):
-    message_manager.clear()
+    # message_manager.clear()
     with app.app_context():
         user = get_user(user_name=user_name)
         user.logo = '/static/assets/img/default_logo.png'

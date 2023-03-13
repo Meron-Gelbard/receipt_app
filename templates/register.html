@@ -26,20 +26,20 @@
                                     {{ form.csrf_token }}
                                     {% for field in form %}
                                     {% if field not in [form.csrf_token, form.submit, form.show_pass] %}
-                                    {{ field.label }}<br>
-                                    <div class="form-floating mb-3">
-                                        {{ field(class="form-control-meron", id=field.id) }}
-                                            {% if field==form.pass_repeat %}
-                                            <span>&nbsp;<i id="new_check" class="fas fa-check green" style="display: none;"></i></span><br>
-                                            <span class="smaller">{{ form.show_pass() }}&nbsp;&nbsp;{{ form.show_pass.label }}</span>
-                                            <br><br>
-                                            {% endif %}
-                                        {% if field.errors: %}
-                                        {% for error in field.errors %}
-                                        <span class="flash_msg">{{ error }}</span>
-                                        {% endfor %}
-                                        {% endif %}
-                                    </div>
+                                        {{ field.label }}<br>
+                                        <div class="form-floating mb-3">
+                                            {{ field(class="form-control-meron", id=field.id) }}
+                                                {% if field.errors: %}
+                                                    {% for error in field.errors %}
+                                                            <span class="flash_msg">{{ error }}</span>
+                                                    {% endfor %}
+                                                {% endif %}
+                                                {% if field==form.pass_repeat %}
+                                                    <span>&nbsp;<i id="new_check" class="fas fa-check green" style="display: none;"></i></span><br>
+                                                    <span class="smaller">{{ form.show_pass() }}&nbsp;&nbsp;{{ form.show_pass.label }}</span>
+                                                    <br><br>
+                                                {% endif %}
+                                        </div>
                                     {% endif %}
                                     {% endfor %}
                                     <div class="mt-4 mb-0">

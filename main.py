@@ -37,19 +37,20 @@ db = SQLAlchemy(app, session_options={"autoflush": False})
 
 class MessageManager:
     def __init__(self):
-        self.messages = ['']
+        self.messages = []
 
     def clear(self):
         if session.get('_flashes'):
             session['_flashes'].clear()
         self.messages = []
-        self.flash_messages()
+        # self.flash_messages()
 
     def flash_messages(self):
         for msg in self.messages:
             flash(msg)
 
     def database_error(self, details):
+        self.clear()
         if 'user_name' in details:
             self.messages.append('This user name already exists.')
         elif 'email' in details:
@@ -61,7 +62,7 @@ class MessageManager:
         self.flash_messages()
 
     def form_validation_error(self, errors):
-        self.messages = []
+        self.clear()
         break_outer = False
         for fieldName, errorMessages in errors:
             for err in errorMessages:
@@ -82,6 +83,7 @@ class MessageManager:
         self.flash_messages()
 
     def communicate(self, message):
+        self.clear()
         self.messages.append(message)
         self.flash_messages()
 
